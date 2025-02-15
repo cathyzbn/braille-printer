@@ -8,6 +8,8 @@ pyserial = "*"
 flask = "*"
 pypdf2 = "*"
 flask-cors = "*"
+python-dotenv = "*"
+anthropic = "*"
 
 [dev-packages]
 
