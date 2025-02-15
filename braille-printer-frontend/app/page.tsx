@@ -2,7 +2,15 @@
 import { useState } from "react";
 import { Heading, HStack, Text, VStack, Input, Button } from "@chakra-ui/react";
 import { toaster, Toaster } from "../components/ui/toaster";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+// import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import dynamic from 'next/dynamic';
+
+
+const DotLottieReact = dynamic(
+  () =>
+    import('@lottiefiles/dotlottie-react').then((mod) => mod.DotLottieReact),
+  { ssr: false }
+);
 
 export default function Home() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
