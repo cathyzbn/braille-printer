@@ -8,11 +8,11 @@ pyserial = "*"
 flask = "*"
 pypdf2 = "*"
 flask-cors = "*"
-<<<<<<< HEAD
 python-dotenv = "*"
 anthropic = "*"
 fpdf = "*"
 pybrl = {git = "git+https://github.com/ant0nisk/pybrl.git"}
+pdf2image = "*"
 
 [dev-packages]
 

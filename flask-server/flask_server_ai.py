@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 import anthropic
 import os
 import base64
+from pdf2image import convert_from_bytes
+from io import BytesIO
 
 load_dotenv()
 client = anthropic.Anthropic()
@@ -29,34 +31,37 @@ def handle_input():
     if request.content_type.startswith("multipart/form-data"):
         if 'file' in request.files:
             pdf_file = request.files['file']
-            # Read entire PDF file and encode it in base64
             pdf_bytes = pdf_file.read()
-            pdf_data = base64.standard_b64encode(pdf_bytes).decode("utf-8")
-
-            message_payload = [
-                {
-                    "type": "document",
-                    "source": {
-                        "type": "base64",
-                        "media_type": "application/pdf",
-                        "data": pdf_data
+            images = convert_from_bytes(pdf_bytes)
+            full_transcription = ""
+            for page in images:
+                buffered = BytesIO()
+                page.save(buffered, format="PNG")
+                image_data = base64.standard_b64encode(buffered.getvalue()).decode("utf-8")
+                message_payload = [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/png",
+                            "data": image_data,
+                        },
+                    },
+                    {
+                        "type": "text",
+                        "text": "transcribe this image to a pdf verbatim. include [image descriptions]. don't write code for this. Don't include any other commentary, just the text transcription, starting now:"
                     }
-                },
-                {
-                    "type": "text",
-                    "text": "you are a pdf parser for the visually impaired. convert this pdf verbatim to text, and include text descriptions for images like [image description]. return exactly the verbatim text of the PDF and nothing else starting now."
-                }
-            ]
-
-            response = client.messages.create(
-                model="claude-3-5-sonnet-20241022",
-                max_tokens=2048,
-                messages=[{"role": "user", "content": message_payload}]
-            )
-            response_text = response.content
-            if isinstance(response_text, list):
-                response_text = "".join(str(item) for item in response.content)
-            return jsonify({"text": response_text}), 200
+                ]
+                response = client.messages.create(
+                    model="claude-3-5-sonnet-20241022",
+                    max_tokens=2048,
+                    messages=[{"role": "user", "content": message_payload}]
+                )
+                transcription = response.content
+                if isinstance(transcription, list):
+                    transcription = "".join(str(item) for item in transcription)
+                full_transcription += transcription + "\n\n"
+            return jsonify({"text": full_transcription.strip()}), 200
         return jsonify({"error": "No file provided"}), 400
 
     elif request.is_json:
