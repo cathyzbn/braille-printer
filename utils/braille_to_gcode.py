@@ -24,7 +24,7 @@ RIGHT_MARGIN_WIDTH = 10
 TOP_MARGIN_HEIGHT = 20
 BOTTOM_MARGIN_HEIGHT = 20
 
-DEBUG = True
+DEBUG = False
 
 # TODO(cathy) spacing options
 # TODO(cathy / jason) support for math?
@@ -104,6 +104,12 @@ def braille_str_to_gcode(braille_str, char_pointer: CharPointer) -> List[GcodeAc
             actions.append(GcodeAction("Next Char"))
         char_pointer.next_char()
     return actions
+
+def init_gcode_actions() -> List[GcodeAction]:
+    return [
+        GcodeAction("G28"),
+        GcodeAction("G90"),
+    ]
 
 
 if __name__ == "__main__":

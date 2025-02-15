@@ -1,5 +1,8 @@
+from typing import List
 import serial
 import time
+
+from braille_to_gcode import GcodeAction
 
 # Replace with your printer's correct port
 port = "/dev/tty.usbserial-0001"
@@ -124,7 +127,7 @@ class PrinterConnection:
             self.ser.close()
             print("Connection closed.")
 
-def print_gcode(gcode_actions):
+def print_gcode(gcode_actions: List[GcodeAction]):
     printer = PrinterConnection(port, baud_rate)
     try:
         printer.connect()
