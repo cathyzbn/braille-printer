@@ -163,6 +163,7 @@ def braille_to_pdf(braille_str: str, output_file: str) -> None:
     # Save PDF
     pdf.output(output_file)
 
+
 if __name__ == "__main__":
     char_pointer = CharPointer()
     hello_braille = text_to_braille("Wishing you a day filled with inspiration, creativity, and success!\nWhatever you’re working on, know that your ideas have the power to make a difference. Keep pushing forward, stay curious, and never stop innovating.")
