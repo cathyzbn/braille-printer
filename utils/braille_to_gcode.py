@@ -25,6 +25,9 @@ RIGHT_MARGIN_WIDTH = 10
 TOP_MARGIN_HEIGHT = 20
 BOTTOM_MARGIN_HEIGHT = 20
 
+SPEED_LATERAL = 1000
+SPEED_VERTICAL = 1000
+
 DEBUG = False
 
 # TODO(cathy) spacing options
@@ -89,18 +92,18 @@ def braille_str_to_gcode(braille_str, char_pointer: CharPointer) -> List[GcodeAc
     braille_chars = [BrailleChar(char) for char in braille_str]
     actions = []
     for char in braille_chars:
-        # actions.append(GcodeAction("G1 X{} Y{} Z{}".format(char_pointer.x, char_pointer.y, char_pointer.z)))
         locations = char.get_dot_rel_loc()
         for location in locations:
-            actions.append(GcodeAction("G1 X{} Y{} Z{}".format(
+            actions.append(GcodeAction("G1 X{} Y{} Z{} F{}".format(
                 # Flip on print!
                 PAPER_WIDTH * MM_PER_UNIT - (char_pointer.x + location.x * MM_PER_UNIT), 
                 char_pointer.y + location.y * MM_PER_UNIT, 
-                char_pointer.z
+                char_pointer.z,
+                SPEED_LATERAL
             )))
             if location.punch:
-                actions.append(GcodeAction("G1 Z{}".format(char_pointer.z - CHAR_DEPTH * MM_PER_UNIT)))
-                actions.append(GcodeAction("G1 Z{}".format(char_pointer.z)))
+                actions.append(GcodeAction("G1 Z{} F{}".format(char_pointer.z - CHAR_DEPTH * MM_PER_UNIT, SPEED_VERTICAL)))
+                actions.append(GcodeAction("G1 Z{} F{}".format(char_pointer.z, SPEED_VERTICAL)))
         if DEBUG:
             actions.append(GcodeAction("Next Char"))
         char_pointer.next_char()
