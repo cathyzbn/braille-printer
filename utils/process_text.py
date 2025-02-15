@@ -9,21 +9,15 @@ def text_to_braille(text):
     Returns:
         str: Braille representation of the input text
     """
-    braille_map = {
-        'a': '⠁', 'b': '⠃', 'c': '⠉', 'd': '⠙', 'e': '⠑', 'f': '⠋',
-        'g': '⠛', 'h': '⠓', 'i': '⠊', 'j': '⠚', 'k': '⠅', 'l': '⠇',
-        'm': '⠍', 'n': '⠝', 'o': '⠕', 'p': '⠏', 'q': '⠟', 'r': '⠗',
-        's': '⠎', 't': '⠞', 'u': '⠥', 'v': '⠧', 'w': '⠺', 'x': '⠭',
-        'y': '⠽', 'z': '⠵', ' ': '⠀',
-        '0': '⠴', '1': '⠂', '2': '⠆', '3': '⠒', '4': '⠲',
-        '5': '⠢', '6': '⠖', '7': '⠶', '8': '⠦', '9': '⠔',
-        '.': '⠨', ',': '⠠', '!': '⠮', '?': '⠹', 
-    }
+    # TODO(cathy): format tabs?
+    chars = " A1B'K2L@CIF/MSP\"E3H9O6R^DJG>NTQ,*5<-U8V.%[$+X!&;:4\\0Z7(_?W]#Y)="
+    brailles = "⠀⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿"
+    braille_map = dict(zip(chars, brailles))
+    braille_map['\n'] = '\n'
     
     result = ''
     for char in text.lower():
         result += braille_map.get(char, char)
-    
     return result
 
 def test_braille_conversion():

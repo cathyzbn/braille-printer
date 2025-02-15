@@ -89,9 +89,12 @@ class CharPointer:
 
 
 def braille_str_to_gcode(braille_str, char_pointer: CharPointer) -> List[GcodeAction]:
-    braille_chars = [BrailleChar(char) for char in braille_str]
     actions = []
-    for char in braille_chars:
+    for char in braille_str:
+        if char == '\n':
+            char_pointer.next_char()
+            continue
+        char = BrailleChar(char)
         locations = char.get_dot_rel_loc()
         for location in locations:
             actions.append(GcodeAction("G1 X{} Y{} Z{} F{}".format(
@@ -122,7 +125,6 @@ def braille_to_pdf(braille_str: str, output_file: str) -> None:
         text: Input text to convert to braille
         output_file: Path to save the PDF file
     """
-    braille_chars = [BrailleChar(char) for char in braille_str]
     
     # Create PDF
     pdf = fpdf.FPDF('P', 'mm', 'Letter')
@@ -131,9 +133,18 @@ def braille_to_pdf(braille_str: str, output_file: str) -> None:
     # Set initial position
     x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
     y = TOP_MARGIN_HEIGHT * MM_PER_UNIT
+
+    def new_line(x, y):
+        x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
+        y += (CHAR_HEIGHT + ROW_HEIGHT) * MM_PER_UNIT
+        return x, y
     
     # Draw each braille character
-    for char in braille_chars:
+    for char in braille_str:
+        if char == '\n':
+            x, y = new_line(x, y)
+            continue
+        char = BrailleChar(char)
         locations = char.get_dot_rel_loc()
         for loc in locations:
             # Convert relative locations to absolute positions
@@ -149,8 +160,7 @@ def braille_to_pdf(braille_str: str, output_file: str) -> None:
         # Move to next character position
         x += (CHAR_WIDTH + COLUMN_WIDTH) * MM_PER_UNIT
         if x + CHAR_WIDTH * MM_PER_UNIT > (PAPER_WIDTH - RIGHT_MARGIN_WIDTH) * MM_PER_UNIT:
-            x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
-            y += (CHAR_HEIGHT + ROW_HEIGHT) * MM_PER_UNIT
+            x, y = new_line(x, y)
             if y - CHAR_HEIGHT * MM_PER_UNIT > (PAPER_HEIGHT - BOTTOM_MARGIN_HEIGHT) * MM_PER_UNIT:
                 pdf.add_page()
                 x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
@@ -161,5 +171,5 @@ def braille_to_pdf(braille_str: str, output_file: str) -> None:
 
 if __name__ == "__main__":
     char_pointer = CharPointer()
-    hello_braille = text_to_braille("Wishing you a day filled with inspiration, creativity, and success! Whatever you’re working on, know that your ideas have the power to make a difference. Keep pushing forward, stay curious, and never stop innovating.")
+    hello_braille = text_to_braille("Wishing you a day filled with inspiration, creativity, and success!\nWhatever you’re working on, know that your ideas have the power to make a difference. Keep pushing forward, stay curious, and never stop innovating.")
     braille_to_pdf(hello_braille, "hello.pdf")
