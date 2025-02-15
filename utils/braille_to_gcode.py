@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from process_text import text_to_braille
+from utils.process_text import text_to_braille
 
 # Constants
 MM_PER_UNIT = 0.05
