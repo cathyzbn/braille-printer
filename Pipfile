@@ -5,6 +5,9 @@ name = "pypi"
 
 [packages]
 pyserial = "*"
+flask = "*"
+pypdf2 = "*"
+flask-cors = "*"
 
 [dev-packages]
 
