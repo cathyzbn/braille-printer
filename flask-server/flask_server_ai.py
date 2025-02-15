@@ -57,7 +57,9 @@ def handle_input():
                     max_tokens=2048,
                     messages=[{"role": "user", "content": message_payload}]
                 )
-                transcription = response.content
+                transcription = response.content[0].text
+                # remove unnec spaces (i.e. "hi  jeff" -> "hi jeff")
+                # transcription = " ".join(transcription.split())
                 if isinstance(transcription, list):
                     transcription = "".join(str(item) for item in transcription)
                 full_transcription += transcription + "\n\n"

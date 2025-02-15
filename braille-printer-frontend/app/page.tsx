@@ -116,13 +116,12 @@ export default function Home() {
           Submit PDF
         </Button>
         {isProcessingPdf && (
-          <HStack mt={2} spacing={2}>
+          <HStack mt={2}>
             <Spinner size="sm" />
             <Text>Processing...</Text>
           </HStack>
         )}
-
-        <Text fontSize="xl" mt={4}>
+        {/* <Text fontSize="xl" mt={4}>
           Or submit plain text
         </Text>
         <Input
@@ -130,7 +129,7 @@ export default function Home() {
           value={textValue}
           onChange={(e) => setTextValue(e.target.value)}
         />
-        <Button onClick={submitText}>Submit Text</Button>
+        <Button onClick={submitText}>Submit Text</Button> */}
       </VStack>
     </VStack>
   );
