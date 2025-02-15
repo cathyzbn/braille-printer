@@ -22,6 +22,8 @@ class PrinterConnection:
         self.baud_rate = baud_rate
         self.ser = None
         self.line_number = 0
+        self.E_steps_per_unit = 400.0
+        self.E_steps_per_degree = 8 * 0.9
 
     def connect(self):
         """Establish connection and perform initial handshake."""
@@ -48,6 +50,17 @@ class PrinterConnection:
         # Now that we're synchronized, enable debug output
         self.send_command("M111 S6")
         print("Handshake complete!")
+
+    def initialize(self):
+        self.send_command("G90")     # Set absolute positioning
+        self.send_command("M83")     # Set relative extrusion
+        self.send_command("M302 S0") # Allow cold extrusion at any temperature
+        self.send_command("G28")     # Zero all axes
+        # Calibrate extrusion
+        for _ in range(2):
+            self.send_command("G1 E2.2 F200")
+            self.send_command("G1 E-2.2 F200")
+        self.send_command("G1 E1.8 F200")
 
     def wait_for_start(self, timeout=10):
         """Wait for the printer to send 'start' after connecting."""
@@ -110,6 +123,14 @@ class PrinterConnection:
                     except (ValueError, IndexError):
                         self.line_number = 1
                     break
+                elif "echo:  m92 " in response.lower():
+                    gcode = response.replace("echo:  m92 ", "").strip()
+                    parts = gcode.split(" ")
+                    for part in parts:
+                        if part.startswith("E"):
+                            self.E_steps_per_unit = float(part.replace("E", ""))
+                            print(f"E_steps_per_unit: {self.E_steps_per_unit}")
+                            break
                 
                 if "ok" in response.lower():
                     self.line_number += 1  # Only increment after confirmed OK
@@ -131,6 +152,7 @@ def print_gcode(gcode_actions: List[GcodeAction]):
     printer = PrinterConnection(port, baud_rate)
     try:
         printer.connect()
+        printer.initialize()
         for action in gcode_actions:
             printer.send_command(action.command)
     except serial.SerialException as e:
@@ -144,11 +166,22 @@ def main():
     printer = PrinterConnection(port, baud_rate)
     try:
         printer.connect()
+        printer.initialize()
 
         # Example movement commands
-        printer.send_command("G28")         # Zero all axes
-        printer.send_command("G90")         # Set absolute positioning
-        printer.send_command("G1 X10 Y10 Z10 F400") # Set X, Y, Z axis to 10mm at 400mm/s
+        # printer.send_command("G90")         # Set absolute positioning
+        # printer.send_command("M83")
+        # printer.send_command("M302 S0")  # Allow cold extrusion at any temperature
+        # printer.send_command("G28")         # Zero all axes
+        # printer.send_command("G1 X10 Y10 Z10 F400") # Set X, Y, Z axis to 10mm at 400mm/s
+        # printer.send_command("G1 E0.2 F800")
+        # printer.send_command("G91")
+        # printer.send_command("G1 Z-2 F100")
+        # time.sleep(5)
+
+        # printer.send_command("G1 E2 F200")
+
+        # printer.send_command("G1 E2 F800")
 
     except serial.SerialException as e:
         print(f"Serial error: {e}")

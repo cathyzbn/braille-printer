@@ -112,12 +112,6 @@ def braille_str_to_gcode(braille_str, char_pointer: CharPointer) -> List[GcodeAc
         char_pointer.next_char()
     return actions
 
-def init_gcode_actions() -> List[GcodeAction]:
-    return [
-        GcodeAction("G28"),
-        GcodeAction("G90"),
-    ]
-
 def braille_to_pdf(braille_str: str, output_file: str) -> None:
     """
     Convert text to braille and create a PDF visualization
