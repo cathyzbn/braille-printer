@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from utils.process_text import text_to_braille
+from process_text import text_to_braille
 
 # Constants
 MM_PER_UNIT = 0.05
@@ -79,7 +79,7 @@ class CharPointer:
     def __init__(self) -> None:
         self.x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
         self.y = TOP_MARGIN_HEIGHT * MM_PER_UNIT
-        self.z = 0
+        self.z = 2 * CHAR_DEPTH * MM_PER_UNIT 
     
     def next_char(self) -> None:
         self.x += (CHAR_WIDTH + COLUMN_WIDTH) * MM_PER_UNIT
