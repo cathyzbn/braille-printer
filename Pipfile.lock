@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "87fff5bd64511ad768fe1da0f50318d25f3b0b0712133a030a5d670e38e88f3a"
+            "sha256": "614ad9b81b7ea818ce5d4c474ff12ec0deac0c3cbc45d44c85b167d1bddf4ff9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,12 @@
         ]
     },
     "default": {
+        "asciimathml": {
+            "hashes": [
+                "sha256:5126d5085e13b6c864e94f50628777ddc23dd130bc5aadaa3c4b7a50a11aefa0"
+            ],
+            "version": "==0.9.5.1"
+        },
         "blinker": {
             "hashes": [
                 "sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf",
@@ -141,6 +147,10 @@
             "markers": "python_version >= '3.9'",
             "version": "==3.0.2"
         },
+        "pybrl": {
+            "git": "git+https://github.com/ant0nisk/pybrl.git",
+            "ref": "6effae1f9ec77b46bc6fdffc70d26f86f0d792f9"
+        },
         "pypdf2": {
             "hashes": [
                 "sha256:a74408f69ba6271f71b9352ef4ed03dc53a31aa404d29b5d31f53bfecfee1440",
@@ -157,6 +167,14 @@
             ],
             "index": "pypi",
             "version": "==3.5"
+        },
+        "six": {
+            "hashes": [
+                "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
+                "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"
+            ],
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "version": "==1.17.0"
         },
         "werkzeug": {
             "hashes": [

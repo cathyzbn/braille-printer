@@ -9,6 +9,7 @@ flask = "*"
 pypdf2 = "*"
 flask-cors = "*"
 fpdf = "*"
+pybrl = {git = "git+https://github.com/ant0nisk/pybrl.git"}
 
 [dev-packages]
 
