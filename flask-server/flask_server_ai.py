@@ -6,25 +6,16 @@ import os
 import base64
 from pdf2image import convert_from_bytes
 from io import BytesIO
+import sys
+sys.path.insert(0, "/Users/cathyzhou/Documents/Workspace/treehacks2025/utils")
+
+from process_text import text_to_braille
 
 load_dotenv()
 client = anthropic.Anthropic()
 
 app = Flask(__name__)
 CORS(app)
-
-def text_to_braille(text: str) -> str:
-    braille_map = {
-        'a': '⠁', 'b': '⠃', 'c': '⠉', 'd': '⠙', 'e': '⠑', 'f': '⠋',
-        'g': '⠛', 'h': '⠓', 'i': '⠊', 'j': '⠚', 'k': '⠅', 'l': '⠇',
-        'm': '⠍', 'n': '⠝', 'o': '⠕', 'p': '⠏', 'q': '⠟', 'r': '⠗',
-        's': '⠎', 't': '⠞', 'u': '⠥', 'v': '⠧', 'w': '⠺', 'x': '⠭',
-        'y': '⠽', 'z': '⠵', ' ': '⠀',
-        '0': '⠴', '1': '⠂', '2': '⠆', '3': '⠒', '4': '⠲',
-        '5': '⠢', '6': '⠖', '7': '⠶', '8': '⠦', '9': '⠔',
-        '.': '⠨', ',': '⠠', '!': '⠮', '?': '⠹',
-    }
-    return "".join(braille_map.get(char, char) for char in text.lower())
 
 @app.route('/', methods=['POST'])
 def handle_input():
