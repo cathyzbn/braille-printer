@@ -28,7 +28,7 @@ BOTTOM_MARGIN_HEIGHT = 20
 SPEED_LATERAL = 4000
 SPEED_PUNCH = 800
 
-DEBUG = False
+DEBUG = True
 
 # TODO(cathy) spacing options
 # TODO(cathy / jason) support for math?
@@ -96,13 +96,13 @@ def braille_str_to_gcode(braille_str, char_pointer: CharPointer) -> List[GcodeAc
         char = BrailleChar(char)
         locations = char.get_dot_rel_loc()
         for location in locations:
-            actions.append(GcodeAction("G1 X{} Y{} F{}".format(
-                # Flip on print!
-                PAPER_WIDTH * MM_PER_UNIT - (char_pointer.x + location.x * MM_PER_UNIT), 
-                char_pointer.y + location.y * MM_PER_UNIT, 
-                SPEED_LATERAL
-            )))
             if location.punch:
+                actions.append(GcodeAction("G1 X{} Y{} F{}".format(
+                    # Flip on print!
+                    PAPER_WIDTH * MM_PER_UNIT - (char_pointer.x + location.x * MM_PER_UNIT), 
+                    char_pointer.y + location.y * MM_PER_UNIT, 
+                    SPEED_LATERAL
+                )))
                 actions.append(GcodeAction("G1 E{} F{}".format(PUNCH_AMOUNT, SPEED_PUNCH)))
         if DEBUG:
             actions.append(GcodeAction("Next Char"))
@@ -164,4 +164,6 @@ def braille_to_pdf(braille_str: str, output_file: str) -> None:
 if __name__ == "__main__":
     char_pointer = CharPointer()
     hello_braille = text_to_braille("Wishing you a day filled with inspiration, creativity, and success!\nWhatever you’re working on, know that your ideas have the power to make a difference. Keep pushing forward, stay curious, and never stop innovating.")
-    braille_to_pdf(hello_braille, "hello.pdf")
+    # braille_to_pdf(hello_braille, "hello.pdf")
+    for x in braille_str_to_gcode(hello_braille, char_pointer):
+        print(str(x))
