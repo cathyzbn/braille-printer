@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Heading, HStack, Text, VStack, Input, Button } from "@chakra-ui/react";
+import { toaster, Toaster } from "../components/ui/toaster";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function Home() {
@@ -9,27 +10,63 @@ export default function Home() {
 
   const submitPdf = async () => {
     if (!pdfFile) return;
-    const formData = new FormData();
-    formData.append("file", pdfFile);
-    // Append type so the backend can differentiate (optional with revised Flask)
-    formData.append("type", "pdf");
-    await fetch("http://localhost:6969", {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const formData = new FormData();
+      formData.append("file", pdfFile);
+      formData.append("type", "pdf");
+      const response = await fetch("http://localhost:6969", {
+        method: "POST",
+        body: formData,
+      });
+      if (response.ok) {
+        toaster.success({
+          title: "Success",
+          description: "PDF file sent successfully!",
+        });
+      } else {
+        toaster.error({
+          title: "Error",
+          description: "Failed to send PDF file.",
+        });
+      }
+    } catch {
+      toaster.error({
+        title: "Error",
+        description: "An unexpected error occurred while sending PDF file.",
+      });
+    }
   };
 
   const submitText = async () => {
     if (!textValue) return;
-    await fetch("http://localhost:6969", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "text", payload: textValue }),
-    });
+    try {
+      const response = await fetch("http://localhost:6969", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "text", payload: textValue }),
+      });
+      if (response.ok) {
+        toaster.success({
+          title: "Success",
+          description: "Text sent successfully!",
+        });
+      } else {
+        toaster.error({
+          title: "Error",
+          description: "Failed to send text.",
+        });
+      }
+    } catch {
+      toaster.error({
+        title: "Error",
+        description: "An unexpected error occurred while sending text.",
+      });
+    }
   };
 
   return (
     <VStack alignContent="center" p={3}>
+      <Toaster/>
       <VStack borderBottom="1px solid" borderColor="gray.300" w="100%" p={3}>
         <HStack>
           <Heading fontSize="5xl">Braille Printer</Heading>
@@ -39,11 +76,11 @@ export default function Home() {
         </HStack>
       </VStack>
 
-      <DotLottieReact 
-        src="./printer.lottie" 
-        loop 
-        autoplay 
-        style={{ width: "400px", height: "200px" }} 
+      <DotLottieReact
+        src="./printer.lottie"
+        loop
+        autoplay
+        style={{ width: "400px", height: "200px" }}
       />
 
       <VStack w="100%" p={3}>
