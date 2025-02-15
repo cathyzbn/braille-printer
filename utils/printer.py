@@ -124,6 +124,19 @@ class PrinterConnection:
             self.ser.close()
             print("Connection closed.")
 
+def print_gcode(printer, gcode_actions):
+    printer = PrinterConnection(port, baud_rate)
+    try:
+        printer.connect()
+        for action in gcode_actions:
+            printer.send_command(action.command)
+    except serial.SerialException as e:
+        print(f"Serial error: {e}")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        printer.close()
+
 def main():
     printer = PrinterConnection(port, baud_rate)
     try:
