@@ -11,6 +11,8 @@ export default function Home() {
     if (!pdfFile) return;
     const formData = new FormData();
     formData.append("file", pdfFile);
+    // Append type so the backend can differentiate (optional with revised Flask)
+    formData.append("type", "pdf");
     await fetch("http://localhost:6969", {
       method: "POST",
       body: formData,
