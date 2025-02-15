@@ -37,6 +37,3 @@ def test_braille_conversion():
     for input_text, expected in test_cases:
         result = text_to_braille(input_text)
         assert result == expected, f"Failed: {input_text} -> Got {result}, Expected {expected}"
-
-
-print(text_to_braille("Hi! My name is Cathy"))
