@@ -1,23 +1,31 @@
 "use client";
 import { useState } from "react";
-import { Heading, HStack, Text, VStack, Input, Button } from "@chakra-ui/react";
+import {
+  Heading,
+  HStack,
+  Text,
+  VStack,
+  Input,
+  Button,
+  Spinner,
+} from "@chakra-ui/react";
 import { toaster, Toaster } from "../components/ui/toaster";
-// import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import dynamic from 'next/dynamic';
-
+import dynamic from "next/dynamic";
 
 const DotLottieReact = dynamic(
   () =>
-    import('@lottiefiles/dotlottie-react').then((mod) => mod.DotLottieReact),
+    import("@lottiefiles/dotlottie-react").then((mod) => mod.DotLottieReact),
   { ssr: false }
 );
 
 export default function Home() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [textValue, setTextValue] = useState("");
+  const [isProcessingPdf, setIsProcessingPdf] = useState(false);
 
   const submitPdf = async () => {
     if (!pdfFile) return;
+    setIsProcessingPdf(true);
     try {
       const formData = new FormData();
       formData.append("file", pdfFile);
@@ -29,7 +37,7 @@ export default function Home() {
       if (response.ok) {
         toaster.success({
           title: "Success",
-          description: "PDF file sent successfully!",
+          description: "PDF file transcribed successfully!",
         });
       } else {
         toaster.error({
@@ -42,6 +50,8 @@ export default function Home() {
         title: "Error",
         description: "An unexpected error occurred while sending PDF file.",
       });
+    } finally {
+      setIsProcessingPdf(false);
     }
   };
 
@@ -74,7 +84,7 @@ export default function Home() {
 
   return (
     <VStack alignContent="center" p={3}>
-      <Toaster/>
+      <Toaster />
       <VStack borderBottom="1px solid" borderColor="gray.300" w="100%" p={3}>
         <HStack>
           <Heading fontSize="5xl">Braille Printer</Heading>
@@ -102,9 +112,19 @@ export default function Home() {
           }}
           accept=".pdf"
         />
-        <Button onClick={submitPdf}>Submit PDF</Button>
+        <Button onClick={submitPdf} disabled={isProcessingPdf}>
+          Submit PDF
+        </Button>
+        {isProcessingPdf && (
+          <HStack mt={2} spacing={2}>
+            <Spinner size="sm" />
+            <Text>Processing...</Text>
+          </HStack>
+        )}
 
-        <Text fontSize="xl">Or submit plain text</Text>
+        <Text fontSize="xl" mt={4}>
+          Or submit plain text
+        </Text>
         <Input
           placeholder="Type something..."
           value={textValue}
