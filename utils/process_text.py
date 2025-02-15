@@ -1,4 +1,6 @@
-def text_to_braille(text):
+import pybrl as brl
+
+def text_to_braille_grade1(text) -> str:
     """
     Converts text to braille representation using Unicode braille patterns.
     Each character is mapped to its corresponding braille pattern.
@@ -9,22 +11,37 @@ def text_to_braille(text):
     Returns:
         str: Braille representation of the input text
     """
-    braille_map = {
-        'a': '⠁', 'b': '⠃', 'c': '⠉', 'd': '⠙', 'e': '⠑', 'f': '⠋',
-        'g': '⠛', 'h': '⠓', 'i': '⠊', 'j': '⠚', 'k': '⠅', 'l': '⠇',
-        'm': '⠍', 'n': '⠝', 'o': '⠕', 'p': '⠏', 'q': '⠟', 'r': '⠗',
-        's': '⠎', 't': '⠞', 'u': '⠥', 'v': '⠧', 'w': '⠺', 'x': '⠭',
-        'y': '⠽', 'z': '⠵', ' ': '⠀',
-        '0': '⠴', '1': '⠂', '2': '⠆', '3': '⠒', '4': '⠲',
-        '5': '⠢', '6': '⠖', '7': '⠶', '8': '⠦', '9': '⠔',
-        '.': '⠨', ',': '⠠', '!': '⠮', '?': '⠹', 
-    }
+    # TODO(cathy): format tabs?
+    chars = " A1B'K2L@CIF/MSP\"E3H9O6R^DJG>NTQ,*5<-U8V.%[$+X!&;:4\\0Z7(_?W]#Y)="
+    brailles = "⠀⠁⠂⠃⠄⠅⠆⠇⠈⠉⠊⠋⠌⠍⠎⠏⠐⠑⠒⠓⠔⠕⠖⠗⠘⠙⠚⠛⠜⠝⠞⠟⠠⠡⠢⠣⠤⠥⠦⠧⠨⠩⠪⠫⠬⠭⠮⠯⠰⠱⠲⠳⠴⠵⠶⠷⠸⠹⠺⠻⠼⠽⠾⠿"
+    braille_map = dict(zip(chars, brailles))
+    braille_map['\n'] = '\n'
     
-    result = ''
-    for char in text.lower():
-        result += braille_map.get(char, char)
+    return ''.join(braille_map.get(char, char) for char in text.upper())
+
+
+def text_to_braille_grade2(text) -> str:
+    """
+    Converts text to braille representation using Unicode braille patterns.
+    Each character is mapped to its corresponding braille pattern.
     
-    return result
+    Args:
+        text (str): Input text to convert to braille
+        
+    Returns:
+        str: Braille representation of the input text
+    """
+    return brl.toUnicodeSymbols(brl.translate(text), flatten=True)
+
+
+def text_to_braille(text, grade=2) -> str:
+    if grade == 1:
+        return text_to_braille_grade1(text)
+    elif grade == 2:
+        return text_to_braille_grade2(text)
+    else:
+        raise ValueError(f"Invalid grade for braille conversion: {grade}")
+
 
 def test_braille_conversion():
     """Test function to verify braille conversion"""

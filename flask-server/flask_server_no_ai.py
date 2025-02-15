@@ -2,21 +2,11 @@ from flask import Flask, request, jsonify
 from PyPDF2 import PdfReader
 from flask_cors import CORS
 
+from utils.braille_to_gcode import braille_to_pdf
+from utils.process_text import text_to_braille
+
 app = Flask(__name__)
 CORS(app)  # Allow requests from your Next.js app
-
-def text_to_braille(text: str) -> str:
-    braille_map = {
-        'a': '⠁', 'b': '⠃', 'c': '⠉', 'd': '⠙', 'e': '⠑', 'f': '⠋',
-        'g': '⠛', 'h': '⠓', 'i': '⠊', 'j': '⠚', 'k': '⠅', 'l': '⠇',
-        'm': '⠍', 'n': '⠝', 'o': '⠕', 'p': '⠏', 'q': '⠟', 'r': '⠗',
-        's': '⠎', 't': '⠞', 'u': '⠥', 'v': '⠧', 'w': '⠺', 'x': '⠭',
-        'y': '⠽', 'z': '⠵', ' ': '⠀',
-        '0': '⠴', '1': '⠂', '2': '⠆', '3': '⠒', '4': '⠲',
-        '5': '⠢', '6': '⠖', '7': '⠶', '8': '⠦', '9': '⠔',
-        '.': '⠨', ',': '⠠', '!': '⠮', '?': '⠹',
-    }
-    return "".join(braille_map.get(char, char) for char in text.lower())
 
 @app.route('/', methods=['POST'])
 def handle_input():
@@ -47,6 +37,7 @@ def handle_input():
         return jsonify({"error": "Invalid JSON payload"}), 400
 
     return jsonify({"error": "Unsupported Content-Type"}), 400
+
 
 if __name__ == '__main__':
     app.run(port=6969, debug=True)
