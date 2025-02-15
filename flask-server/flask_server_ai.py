@@ -7,7 +7,7 @@ import base64
 from pdf2image import convert_from_bytes
 from io import BytesIO
 import sys
-sys.path.insert(0, "/Users/cathyzhou/Documents/Workspace/treehacks2025/utils")
+sys.path.insert(0, "./utils")
 
 from process_text import text_to_braille
 
