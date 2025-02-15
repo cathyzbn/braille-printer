@@ -124,7 +124,7 @@ class PrinterConnection:
             self.ser.close()
             print("Connection closed.")
 
-def print_gcode(printer, gcode_actions):
+def print_gcode(gcode_actions):
     printer = PrinterConnection(port, baud_rate)
     try:
         printer.connect()
