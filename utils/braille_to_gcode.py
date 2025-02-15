@@ -5,7 +5,7 @@ import fpdf
 from process_text import text_to_braille
 
 # Constants
-MM_PER_UNIT = 5
+MM_PER_UNIT = 2
 # Diameter of one dot is 1 unit
 DIST_DIAM_DOT = 1
 DIST_BETWEEN_DOTS = 1
@@ -92,7 +92,12 @@ def braille_str_to_gcode(braille_str, char_pointer: CharPointer) -> List[GcodeAc
         # actions.append(GcodeAction("G1 X{} Y{} Z{}".format(char_pointer.x, char_pointer.y, char_pointer.z)))
         locations = char.get_dot_rel_loc()
         for location in locations:
-            actions.append(GcodeAction("G1 X{} Y{} Z{}".format(char_pointer.x + location.x * MM_PER_UNIT, char_pointer.y + location.y * MM_PER_UNIT, char_pointer.z)))
+            actions.append(GcodeAction("G1 X{} Y{} Z{}".format(
+                # Flip on print!
+                PAPER_WIDTH * MM_PER_UNIT - (char_pointer.x + location.x * MM_PER_UNIT), 
+                char_pointer.y + location.y * MM_PER_UNIT, 
+                char_pointer.z
+            )))
             if location.punch:
                 actions.append(GcodeAction("G1 Z{}".format(char_pointer.z - CHAR_DEPTH * MM_PER_UNIT)))
                 actions.append(GcodeAction("G1 Z{}".format(char_pointer.z)))
@@ -133,10 +138,10 @@ def braille_to_pdf(braille_str: str, output_file: str) -> None:
             abs_y = y + loc.y * MM_PER_UNIT
             # Draw dot as small circle
             if loc.punch:
-                pdf.ellipse(abs_x - DIST_DIAM_DOT/2 * MM_PER_UNIT, abs_y - DIST_DIAM_DOT/2 * MM_PER_UNIT, 
+                pdf.ellipse(abs_x, abs_y, 
                           DIST_DIAM_DOT * MM_PER_UNIT, DIST_DIAM_DOT * MM_PER_UNIT, 'F')
             else:
-                pdf.ellipse(abs_x - DIST_DIAM_DOT/2 * MM_PER_UNIT, abs_y - DIST_DIAM_DOT/2 * MM_PER_UNIT,
+                pdf.ellipse(abs_x, abs_y,
                           DIST_DIAM_DOT * MM_PER_UNIT, DIST_DIAM_DOT * MM_PER_UNIT, 'D')
         # Move to next character position
         x += (CHAR_WIDTH + COLUMN_WIDTH) * MM_PER_UNIT
@@ -153,5 +158,5 @@ def braille_to_pdf(braille_str: str, output_file: str) -> None:
 
 if __name__ == "__main__":
     char_pointer = CharPointer()
-    hello_braille = text_to_braille("abc!.,aloufoweaufo;asou;ews;oijf;osij")
+    hello_braille = text_to_braille("Wishing you a day filled with inspiration, creativity, and success! Whatever you’re working on, know that your ideas have the power to make a difference. Keep pushing forward, stay curious, and never stop innovating.")
     braille_to_pdf(hello_braille, "hello.pdf")
