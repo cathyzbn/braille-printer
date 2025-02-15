@@ -5,7 +5,7 @@ import fpdf
 from process_text import text_to_braille
 
 # Constants
-MM_PER_UNIT = 2
+MM_PER_UNIT = 5
 # Diameter of one dot is 1 unit
 DIST_DIAM_DOT = 1
 DIST_BETWEEN_DOTS = 1
