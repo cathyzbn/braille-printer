@@ -25,10 +25,10 @@ RIGHT_MARGIN_WIDTH = 10
 TOP_MARGIN_HEIGHT = 20
 BOTTOM_MARGIN_HEIGHT = 20
 
-SPEED_LATERAL = 4000
+SPEED_LATERAL = 4000 # 4000
 SPEED_PUNCH = 800
 
-DEBUG = True
+DEBUG = False
 
 # TODO(cathy) spacing options
 # TODO(cathy / jason) support for math?

@@ -52,6 +52,8 @@ class PrinterConnection:
         print("Handshake complete!")
 
     def initialize(self):
+        self.send_command("G91")     # Set relative positioning
+        self.send_command("G1 Z10 F800")
         self.send_command("G90")     # Set absolute positioning
         self.send_command("M83")     # Set relative extrusion
         self.send_command("M302 S0") # Allow cold extrusion at any temperature
@@ -60,7 +62,10 @@ class PrinterConnection:
         for _ in range(2):
             self.send_command("G1 E2.2 F200")
             self.send_command("G1 E-2.2 F200")
-        self.send_command("G1 E1.8 F200")
+        self.send_command("G1 E1.5 F200")
+        # Make z axis go up
+        # self.send_command("G1 Z10 F800")
+        input("Press Enter to continue...")
 
     def wait_for_start(self, timeout=10):
         """Wait for the printer to send 'start' after connecting."""
@@ -181,7 +186,11 @@ def main():
 
         # printer.send_command("G1 E2 F200")
 
-        # printer.send_command("G1 E2 F800")
+        printer.send_command("G1 E2 F800")
+        printer.send_command("G1 X10 Y10 Z10 F400")
+        printer.send_command("G1 E2 F800")
+        printer.send_command("G1 X10 Y10 Z10 F400")
+        printer.send_command("G1 E2 F800")
 
     except serial.SerialException as e:
         print(f"Serial error: {e}")

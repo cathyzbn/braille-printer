@@ -4,7 +4,7 @@ from printer import print_gcode
 
 if __name__ == "__main__":
     char_pointer = CharPointer()
-    hello_braille = text_to_braille("abc!.,")
+    hello_braille = text_to_braille("abc!.,", grade=1)
     print(hello_braille)
     actions = braille_str_to_gcode(hello_braille, char_pointer)
     print("\n".join(str(action) for action in actions))
