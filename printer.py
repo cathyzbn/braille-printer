@@ -130,10 +130,9 @@ def main():
         printer.connect()
 
         # Example movement commands
-        printer.send_command("G21")  # Set units to millimeters
-        printer.send_command("G91")  # Set relative positioning
-        printer.send_command("G1 Y10 F400")  # Move Y-axis
-        printer.send_command("G90")  # Back to absolute positioning
+        printer.send_command("G28")         # Zero all axes
+        printer.send_command("G90")         # Set absolute positioning
+        printer.send_command("G1 X10 Y10 Z10 F400") # Set X, Y, Z axis to 10mm at 400mm/s
 
     except serial.SerialException as e:
         print(f"Serial error: {e}")
