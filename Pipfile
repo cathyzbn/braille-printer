@@ -8,6 +8,7 @@ pyserial = "*"
 flask = "*"
 pypdf2 = "*"
 flask-cors = "*"
+fpdf = "*"
 
 [dev-packages]
 
