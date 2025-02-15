@@ -12,7 +12,7 @@ DIST_BETWEEN_DOTS = 1
 
 CHAR_HEIGHT = 3 * DIST_DIAM_DOT + 2 * DIST_BETWEEN_DOTS
 CHAR_WIDTH = 2 * DIST_DIAM_DOT + DIST_BETWEEN_DOTS
-CHAR_DEPTH = 1
+PUNCH_AMOUNT = 2
 
 COLUMN_WIDTH = 2
 ROW_HEIGHT = 2
@@ -26,7 +26,7 @@ TOP_MARGIN_HEIGHT = 20
 BOTTOM_MARGIN_HEIGHT = 20
 
 SPEED_LATERAL = 4000
-SPEED_VERTICAL = 4000
+SPEED_PUNCH = 800
 
 DEBUG = False
 
@@ -77,14 +77,13 @@ class CharPointer:
     def __init__(self) -> None:
         self.x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
         self.y = TOP_MARGIN_HEIGHT * MM_PER_UNIT
-        self.z = 2 * CHAR_DEPTH * MM_PER_UNIT 
     
     def next_char(self) -> None:
         self.x += (CHAR_WIDTH + COLUMN_WIDTH) * MM_PER_UNIT
         if self.x + CHAR_WIDTH * MM_PER_UNIT > PAPER_WIDTH * MM_PER_UNIT - RIGHT_MARGIN_WIDTH * MM_PER_UNIT:
             self.x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
             self.y += (CHAR_HEIGHT + ROW_HEIGHT) * MM_PER_UNIT
-        if self.y - CHAR_DEPTH * MM_PER_UNIT > PAPER_HEIGHT * MM_PER_UNIT - BOTTOM_MARGIN_HEIGHT * MM_PER_UNIT:
+        if self.y > PAPER_HEIGHT * MM_PER_UNIT - BOTTOM_MARGIN_HEIGHT * MM_PER_UNIT:
             raise Exception("Out of paper")
 
 
@@ -97,16 +96,14 @@ def braille_str_to_gcode(braille_str, char_pointer: CharPointer) -> List[GcodeAc
         char = BrailleChar(char)
         locations = char.get_dot_rel_loc()
         for location in locations:
-            actions.append(GcodeAction("G1 X{} Y{} Z{} F{}".format(
+            actions.append(GcodeAction("G1 X{} Y{} F{}".format(
                 # Flip on print!
                 PAPER_WIDTH * MM_PER_UNIT - (char_pointer.x + location.x * MM_PER_UNIT), 
                 char_pointer.y + location.y * MM_PER_UNIT, 
-                char_pointer.z,
                 SPEED_LATERAL
             )))
             if location.punch:
-                actions.append(GcodeAction("G1 Z{} F{}".format(char_pointer.z - CHAR_DEPTH * MM_PER_UNIT, SPEED_VERTICAL)))
-                actions.append(GcodeAction("G1 Z{} F{}".format(char_pointer.z, SPEED_VERTICAL)))
+                actions.append(GcodeAction("G1 E{} F{}".format(PUNCH_AMOUNT, SPEED_PUNCH)))
         if DEBUG:
             actions.append(GcodeAction("Next Char"))
         char_pointer.next_char()
