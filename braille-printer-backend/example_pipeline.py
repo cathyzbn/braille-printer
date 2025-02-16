@@ -22,6 +22,6 @@ if __name__ == "__main__":
     for page_num, page in enumerate(dot_positions):
         print(f"\nGenerating GCODE for page {page_num + 1}:")
         actions = dot_pos_to_gcode(page)
+        print_gcode(actions)
         for action in actions:
             print(str(action))
-        print_gcode(actions)

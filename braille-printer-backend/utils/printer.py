@@ -2,7 +2,7 @@ from typing import List
 import serial
 import time
 
-from utils.braille_to_gcode import GcodeAction
+from utils.braille_to_gcode import DotPosition, GcodeAction, dot_pos_to_gcode
 
 # Replace with your printer's correct port
 port = "/dev/tty.usbserial-0001"
@@ -166,6 +166,12 @@ def print_gcode(gcode_actions: List[GcodeAction]):
         print(f"Error: {e}")
     finally:
         printer.close()
+
+
+def print_dots(dots: List[DotPosition]):
+    gcode_actions = dot_pos_to_gcode(dots)
+    print_gcode(gcode_actions)
+
 
 def main():
     printer = PrinterConnection(port, baud_rate)
