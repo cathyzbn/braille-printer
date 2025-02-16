@@ -5,7 +5,7 @@
   "main": "main/out/main.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development concurrently -k \"cross-env BROWSER=none npm run renderer:dev\" \"npm run electron:dev\"",
-    "build": " npm run build:main && npm run renderer:build",
+    "build": "npm run python:build && npm run build:main && npm run renderer:build",
     "start": "cross-env npm run electron",
     "build:main": "tsc -p main && tsc-alias -p main/tsconfig.json",
     "renderer:dev": "cd renderer && next dev --turbopack",
@@ -29,7 +29,7 @@
         "to": "python"
       },
       {
-        "from": "braille-printer-backend",
+        "from": "../braille-printer-backend",
         "to": "braille-printer-backend"
       }
     ],
