@@ -10,6 +10,8 @@ from utils.braille_to_gcode import DotPosition, GcodeAction, dot_pos_to_gcode
 port = "/dev/tty.usbserial-0001"
 baud_rate = 250000  # Adjust this to match your printer's baud rate
 
+DEBUG = True
+
 class PrintStatus(Enum):
     IDLE = "idle"
     PRINTING = "printing" 
@@ -196,9 +198,10 @@ class PrinterConnection:
         """Get the current status of the printer."""
         return self.status
 
+
+printer = PrinterConnection(port, baud_rate)
+
 def print_gcode(gcode_actions: List[GcodeAction]):
-    printer = PrinterConnection(port, baud_rate)
-    
     def print_thread():
         try:
             printer.connect()
@@ -229,9 +232,34 @@ def print_gcode(gcode_actions: List[GcodeAction]):
         finally:
             printer.close()
 
+    if DEBUG:
+        print("DEBUG: starting print thread")
     printer.print_thread = threading.Thread(target=print_thread)
     printer.print_thread.start()
+    if DEBUG:
+        print("DEBUG: print thread started")
     return printer  # Return printer object so caller can control/monitor the print
+
+def stop_print():
+    if DEBUG:
+        print("DEBUG: stopping print")
+    printer.stop()
+    if DEBUG:
+        print("DEBUG: print stopped")
+
+def pause_print():
+    if DEBUG:
+        print("DEBUG: pausing print")
+    printer.pause()
+    if DEBUG:
+        print("DEBUG: print paused")
+
+def resume_print():
+    if DEBUG:
+        print("DEBUG: resuming print")
+    printer.resume()
+    if DEBUG:
+        print("DEBUG: print resumed")
 
 def print_dots(dots: List[DotPosition]):
     gcode_actions = dot_pos_to_gcode(dots)
