@@ -5,7 +5,7 @@ import fpdf
 from process_text import text_to_braille
 
 # Constants
-MM_PER_UNIT = 2
+MM_PER_UNIT = 2 # change for font
 # Diameter of one dot is 1 unit
 DIST_DIAM_DOT = 1
 DIST_BETWEEN_DOTS = 1
@@ -32,6 +32,9 @@ DEBUG = False
 
 @dataclass
 class DotPosition:
+    """
+    Position relative to page top
+    """
     x: float
     y: float
     punch: bool
@@ -39,6 +42,9 @@ class DotPosition:
 
 @dataclass 
 class DotRelativeLocation:
+    """
+    Position relative to character top
+    """
     x: int
     y: int
     punch: bool
@@ -132,6 +138,7 @@ def dot_pos_to_pdf(dot_positions: List[DotPosition], output_file: str) -> None:
     
     pdf.output(output_file)
 
+
 def dot_pos_to_gcode(dot_positions: List[DotPosition]) -> List[GcodeAction]:
     """Convert dot positions to GCODE commands"""
     actions = []
@@ -144,6 +151,7 @@ def dot_pos_to_gcode(dot_positions: List[DotPosition]) -> List[GcodeAction]:
             )))
             actions.append(GcodeAction("G1 E{} F{}".format(PUNCH_AMOUNT, SPEED_PUNCH)))
     return actions
+
 
 if __name__ == "__main__":
     hello_braille = text_to_braille("Wishing you a day filled with inspiration, creativity, and success!\nWhatever you're working on, know that your ideas have the power to make a difference. Keep pushing forward, stay curious, and never stop innovating.")
