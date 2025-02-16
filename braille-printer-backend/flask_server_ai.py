@@ -8,7 +8,7 @@ import atexit
 from utils.pdf_extraction import extract_text_from_pdf
 from utils.text_to_braille import text_to_braille
 from utils.braille_to_gcode import DotPosition, dot_pos_to_pdf, get_dots_pos_and_page, dot_pos_to_gcode
-from utils.printer import print_gcode, PrinterConnection, PrintStatus
+from utils.printer import PrinterConnection, PrintStatus, pause_print, print_gcode, resume_print, stop_print
 
 DEBUG = False
 
@@ -30,6 +30,11 @@ def handle_input():
         transcript = extract_text_from_pdf(pdf_bytes)
         if DEBUG:
             print("DEBUG: transcript", transcript)
+        braille = text_to_braille(transcript)
+        dots_pos = get_dots_pos_and_page(braille)
+        return jsonify(dots_pos), 200
+    elif 'text' in request.form:
+        transcript = request.form['text']
         braille = text_to_braille(transcript)
         dots_pos = get_dots_pos_and_page(braille)
         return jsonify(dots_pos), 200
@@ -88,7 +93,22 @@ def handle_print_dots():
     print_gcode(actions)
     return jsonify({"success—printing...": True}), 200
 
-# When this flask server process is killed, we need to stop the printer
+@app.route('/stop_print', methods=['POST'])
+def handle_stop_print():
+    stop_print()
+    return jsonify({"success": True}), 200
+
+@app.route('/pause_print', methods=['POST'])
+def handle_pause_print():
+    pause_print()
+    return jsonify({"success": True}), 200
+
+@app.route('/resume_print', methods=['POST'])
+def handle_resume_print():
+    resume_print()
+    return jsonify({"success": True}), 200
+
+
 def cleanup():
     global printer
     if printer is not None:
