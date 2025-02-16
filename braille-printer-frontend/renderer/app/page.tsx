@@ -48,7 +48,7 @@ export default function Home() {
   const [dotPositions, setDotPositions] = useState<DotPositions>([]);
   const [currPage, setCurrPage] = useState(0);
   const [isPrinting, setIsPrinting] = useState(false);
-  const [isConnected, setIsConnected] = useState(true);
+  const [isConnected, setIsConnected] = useState(false);
 
   const submitText = async () => {
     if (!text.trim()) return;
