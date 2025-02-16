@@ -7,7 +7,7 @@ import anthropic
 from utils.pdf_extraction import extract_text_from_pdf
 from utils.text_to_braille import text_to_braille
 from utils.braille_to_gcode import DotPosition, dot_pos_to_pdf, get_dots_pos_and_page, dot_pos_to_gcode
-from utils.printer import print_gcode
+from utils.printer import pause_print, print_gcode, resume_print, stop_print
 
 DEBUG = False
 
@@ -65,6 +65,22 @@ def handle_print_dots():
     actions = dot_pos_to_gcode(dot_positions)
     print_gcode(actions)
     return jsonify({"success—printing...": True}), 200
+
+@app.route('/stop_print', methods=['POST'])
+def handle_stop_print():
+    stop_print()
+    return jsonify({"success": True}), 200
+
+@app.route('/pause_print', methods=['POST'])
+def handle_pause_print():
+    pause_print()
+    return jsonify({"success": True}), 200
+
+@app.route('/resume_print', methods=['POST'])
+def handle_resume_print():
+    resume_print()
+    return jsonify({"success": True}), 200
+
 
 if __name__ == '__main__':
     app.run(port=6969, debug=True)
