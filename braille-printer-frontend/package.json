@@ -21,8 +21,8 @@
     "builder": "electron-builder --dir"
   },
   "build": {
-    "appId": "Braille-Printer",
-    "productName": "Braille Printer",
+    "appId": "Braille-Bot",
+    "productName": "BrailleBot",
     "extraResources": [
       {
         "from": "../braille-printer-backend",
@@ -40,7 +40,7 @@
       "oneClick": false,
       "perMachine": true,
       "allowToChangeInstallationDirectory": true,
-      "uninstallDisplayName": "Braille Printer"
+      "uninstallDisplayName": "BrailleBot"
     },
     "mac": {
       "category": "public.app-category.utilities",
@@ -50,7 +50,7 @@
       "icon": "assets/mac/icon.icns"
     },
     "dmg": {
-      "title": "Braille Printer Installer"
+      "title": "BrailleBot Installer"
     }
   },
   "dependencies": {

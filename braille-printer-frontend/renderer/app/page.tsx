@@ -113,7 +113,7 @@ export default function Home() {
   }
 
   useEffect(() => {
-    window.electronAPI?.setTitle("Braille Printer");
+    window.electronAPI?.setTitle("BrailleBot");
   }, []);
 
   return (
@@ -127,7 +127,7 @@ export default function Home() {
         gapY={5}
       >
         <HStack>
-          <Heading fontSize="6xl">Braille Printer</Heading>
+          <Heading fontSize="6xl">BrailleBot</Heading>
         </HStack>
         <HStack>
           <Text fontSize="2xl">Any PDF to printed braille</Text>
