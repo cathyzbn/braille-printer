@@ -1,0 +1,23 @@
+appId: org.konshin.nextelectronrsc
+productName: Next Electron RSC
+
+directories:
+  output: dist
+  buildResources: assets
+
+#asarUnpack:
+#  - '**/.next/cache/**/*'
+asar: false
+
+files:
+  - build
+  - '.next/standalone/demo/**/*'
+  - '.next/standalone/demo/**/node_modules/**'
+
+mac:
+  category: public.app-category.developer-tools
+  target:
+    target: dir
+    arch:
+      - arm64
+#      - x64
