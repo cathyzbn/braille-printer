@@ -20,9 +20,9 @@ const DotLottieReact = dynamic(
 
 export default function Home() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [textValue, setTextValue] = useState("");
   const [isProcessingPdf, setIsProcessingPdf] = useState(false);
-
+  const [dotPositions, setActiveDotPositions] = useState({}); // no type checking rn
+  const [currPage, setCurrPage] = useState(0);
   const submitPdf = async () => {
     if (!pdfFile) return;
     setIsProcessingPdf(true);
@@ -34,11 +34,17 @@ export default function Home() {
         method: "POST",
         body: formData,
       });
+
       if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
         toaster.success({
           title: "Success",
           description: "PDF file transcribed successfully!",
         });
+        const braillePositions = await response.json();
+        setActiveDotPositions(braillePositions);
+        setCurrPage(1);
       } else {
         toaster.error({
           title: "Error",
@@ -55,32 +61,32 @@ export default function Home() {
     }
   };
 
-  const submitText = async () => {
-    if (!textValue) return;
-    try {
-      const response = await fetch("http://localhost:6969", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "text", payload: textValue }),
-      });
-      if (response.ok) {
-        toaster.success({
-          title: "Success",
-          description: "Text sent successfully!",
-        });
-      } else {
-        toaster.error({
-          title: "Error",
-          description: "Failed to send text.",
-        });
-      }
-    } catch {
-      toaster.error({
-        title: "Error",
-        description: "An unexpected error occurred while sending text.",
-      });
-    }
-  };
+  // const submitText = async () => {
+  //   if (!textValue) return;
+  //   try {
+  //     const response = await fetch("http://localhost:6969", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ type: "text", payload: textValue }),
+  //     });
+  //     if (response.ok) {
+  //       toaster.success({
+  //         title: "Success",
+  //         description: "Text sent successfully!",
+  //       });
+  //     } else {
+  //       toaster.error({
+  //         title: "Error",
+  //         description: "Failed to send text.",
+  //       });
+  //     }
+  //   } catch {
+  //     toaster.error({
+  //       title: "Error",
+  //       description: "An unexpected error occurred while sending text.",
+  //     });
+  //   }
+  // };
 
   return (
     <VStack alignContent="center" p={3}>
@@ -100,37 +106,38 @@ export default function Home() {
         autoplay
         style={{ width: "400px", height: "200px" }}
       />
-
-      <VStack w="100%" p={3}>
-        <Text fontSize="xl">Upload a PDF file to get started</Text>
-        <Input
-          type="file"
-          onChange={(e) => {
-            if (e.target.files) {
-              setPdfFile(e.target.files[0]);
-            }
-          }}
-          accept=".pdf"
-        />
-        <Button onClick={submitPdf} disabled={isProcessingPdf}>
-          Submit PDF
-        </Button>
-        {isProcessingPdf && (
-          <HStack mt={2}>
-            <Spinner size="sm" />
-            <Text>Processing...</Text>
-          </HStack>
-        )}
-        {/* <Text fontSize="xl" mt={4}>
-          Or submit plain text
-        </Text>
-        <Input
-          placeholder="Type something..."
-          value={textValue}
-          onChange={(e) => setTextValue(e.target.value)}
-        />
-        <Button onClick={submitText}>Submit Text</Button> */}
-      </VStack>
+      {/* don't render below if we've received dot_positions */}
+      {!dotPositions && (
+        <VStack w="100%" p={3}>
+          <Text fontSize="xl">Upload a PDF file to get started</Text>
+          <Input
+            type="file"
+            onChange={(e) => {
+              if (e.target.files) {
+                setPdfFile(e.target.files[0]);
+              }
+            }}
+            accept=".pdf"
+          />
+          <Button onClick={submitPdf} disabled={isProcessingPdf}>
+            Submit PDF
+          </Button>
+          {isProcessingPdf && (
+            <HStack mt={2}>
+              <Spinner size="sm" />
+              <Text>Processing...</Text>
+            </HStack>
+          )}
+          <VStack id="braille-pdf-container"></VStack>
+        </VStack>
+      )}
+      {dotPositions && (
+        <VStack w="100%" p={3}>
+          <Heading fontSize="2xl">Page {currPage}</Heading>
+          <PDFPreview page={currPage}/>
+          <Button onClick={() => setCurrPage(currPage + 1)} disabled={currPage === 0}>Print</Button>
+        </VStack>
+      )}
     </VStack>
   );
 }
