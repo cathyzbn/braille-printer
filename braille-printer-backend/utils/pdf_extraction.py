@@ -155,7 +155,6 @@ def extract_elements_with_positions(pdf_doc, model=groq_model):
         ]
         # Add image descriptions to elements list
         for response, query in zip(responses, image_queries):
-            print("DEBUG: groq response", response.choices[0].message.content)
             elements.append(("image", response.choices[0].message.content, query['position']))
     return sorted(elements, key=lambda e: e[2][1])  # Sort by y-coordinate for top-down order
 
