@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import anthropic
 import atexit
 
-from utils.pdf_extraction import extract_text_from_pdf
+from utils.pdf_extraction import extract_text_from_pdf, extract_text_from_zoom
 from utils.text_to_braille import text_to_braille
 from utils.braille_to_gcode import DotPosition, dot_pos_to_pdf, get_dots_pos_and_page, dot_pos_to_gcode, printed_dots
 from utils.printer import PrinterConnection, PrintStatus, pause_print, print_gcode, resume_print, stop_print
@@ -22,23 +22,27 @@ printer = None
 
 # pdf to dot positions
 # right now it's pdf to ascii
+
+
 @app.route('/', methods=['POST'])
 def handle_input():
     if 'file' in request.files:
         pdf_file = request.files['file']
         pdf_bytes = pdf_file.read()
         transcript = extract_text_from_pdf(pdf_bytes)
-        if DEBUG:
-            print("DEBUG: transcript", transcript)
-        braille = text_to_braille(transcript)
-        dots_pos = get_dots_pos_and_page(braille)
-        return jsonify(dots_pos), 200
     elif 'text' in request.form:
-        transcript = request.form['text']
-        braille = text_to_braille(transcript)
-        dots_pos = get_dots_pos_and_page(braille)
-        return jsonify(dots_pos), 200
-    return jsonify({"error": "No file provided"}), 400
+        text = request.form['text']
+        if text.startswith('https://') and 'zoom.us' in text:
+            transcript = extract_text_from_zoom(text)
+        else:
+            transcript = text
+            
+    if DEBUG:
+        print("DEBUG: transcript", transcript)
+    braille = text_to_braille(transcript)
+    dots_pos = get_dots_pos_and_page(braille)
+    return jsonify(dots_pos), 200
+
 
 @app.route('/connect', methods=['POST'])
 def handle_connect():
@@ -52,6 +56,7 @@ def handle_connect():
         return jsonify({"error": str(e)}), 500
     return jsonify({"success": True}), 200
 
+
 @app.route('/disconnect', methods=['POST'])
 def handle_disconnect():
     global printer
@@ -59,6 +64,7 @@ def handle_disconnect():
         printer.close()
         printer = None
     return jsonify({"success": True}), 200
+
 
 @app.route('/dot_pos_to_pdf', methods=['POST'])
 def handle_dot_pos_to_pdf():
@@ -71,7 +77,7 @@ def handle_dot_pos_to_pdf():
     # If your 'dot_positions' is a nested list, you might need to flatten it:
     # flatten_dot_positions = [dot for page in dot_positions for dot in page]
     #
-    # If it’s already a single list, skip flattening.
+    # If it's already a single list, skip flattening.
 
     pdf = dot_pos_to_pdf(dot_positions)
     pdf_bytes = pdf.output(dest='S').encode('latin1')
@@ -82,9 +88,11 @@ def handle_dot_pos_to_pdf():
         download_name="braille.pdf"
     )
 
+
 @app.route('/printed_dots', methods=['POST'])
 def handle_printed_dots():
     return jsonify(printed_dots.dots), 200
+
 
 @app.route('/print_dots', methods=['POST'])
 def handle_print_dots():
@@ -93,10 +101,11 @@ def handle_print_dots():
     dot_positions = data["dotPositions"]
     dot_positions = [DotPosition(**dot_dict) for dot_dict in dot_positions]
 
-    # convert from 
+    # convert from
     actions = dot_pos_to_gcode(dot_positions)
     print_gcode(actions, printer)
     return jsonify({"success": True}), 200
+
 
 @app.route('/stop_print', methods=['POST'])
 def handle_stop_print():
@@ -104,10 +113,12 @@ def handle_stop_print():
     printed_dots.clear()
     return jsonify({"success": True}), 200
 
+
 @app.route('/pause_print', methods=['POST'])
 def handle_pause_print():
     pause_print(printer)
     return jsonify({"success": True}), 200
+
 
 @app.route('/resume_print', methods=['POST'])
 def handle_resume_print():
@@ -123,6 +134,7 @@ def cleanup():
             printer = None
         except Exception as e:
             print(f"Error disconnecting printer: {e}")
+
 
 atexit.register(cleanup)
 

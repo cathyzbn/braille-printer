@@ -1,11 +1,14 @@
-
 import fitz  # PyMuPDF
 import os
 from dotenv import load_dotenv
 import anthropic
 import base64
 from groq import Groq
-import time 
+import time
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 load_dotenv()
 claude_client = anthropic.Anthropic()
@@ -15,6 +18,7 @@ claude_model = "claude-3-haiku-20240307"
 groq_model = "llama-3.2-11b-vision-preview"
 
 groq_text_model = "llama3-8b-8192"
+groq_fast_model = "llama-3.2-1b-preview"
 
 
 def extract_text_from_pdf(pdf_input, input_type="data"):
@@ -27,10 +31,127 @@ def extract_text_from_pdf(pdf_input, input_type="data"):
     elements = extract_elements_with_positions(pdf_doc)
     return format_elements(elements)
 
+
+def get_full_transcript(zoom_url):
+    # Set up headless Chrome driver
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    driver = webdriver.Chrome(options=options)
+    
+    try:
+        # Load the Zoom transcript page
+        driver.get(zoom_url)
+        print(zoom_url)
+        # Wait for transcript list to load
+        transcript_list = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "transcript-list"))
+        )
+        
+        # Execute JavaScript to extract messages
+        transcript = driver.execute_script("""
+            const transcriptList = document.querySelector('.transcript-list');
+            const transcriptListItems = transcriptList.querySelectorAll('li');
+            
+            const messages = [];
+            transcriptListItems.forEach(item => {
+                const userName = item.querySelector('.user-name');
+                if (userName) {
+                    const user = userName.textContent;
+                    const text = item.querySelector('.text').textContent;
+                    messages.push({
+                        user: user,
+                        text: text
+                    });
+                } else {
+                    messages[messages.length - 1].text += '\\n' + item.querySelector('.text').textContent;
+                }
+            });
+            
+            return messages;
+        """)
+        
+        # Format transcript into string
+        full_transcript = ""
+        for message in transcript:
+            full_transcript += f"{message['user']}: {message['text']}\n"
+            
+        return full_transcript
+        
+    finally:
+        driver.quit()
+
+
+def extract_text_from_zoom(zoom_url):
+    # f = open("braille-printer-backend/transcript.vtt", "r")
+    # raw_transcript = f.read()
+    raw_transcript = get_full_transcript(zoom_url)
+    print("raw_transcript", len(raw_transcript))
+    transcript = ""
+    for line in raw_transcript.split("\n"):
+        if ":" in line and not line[0].isdigit():
+            # Get everything after the colon and strip whitespace
+            transcript += line.split(":", 1)[1].strip() + " "
+
+    # Split transcript into chunks of roughly 2000 tokens each
+    # (A rough estimate is ~4 chars per token)
+    chunk_size = 8000  # characters
+    chunks = [transcript[i:i+chunk_size] for i in range(0, len(transcript), chunk_size)]
+
+    summaries = []
+    # Create prompts for all chunks
+    prompts = []
+    for chunk in chunks:
+        groq_prompt = f"""Summarize this portion of a lecture transcript concisely, focusing on key points:
+
+{chunk}
+
+Focus on:
+1. Main topics and concepts
+2. Key technical details
+3. Clear and readable format"""
+        prompts.append({
+            "messages": [{"role": "user", "content": groq_prompt}],
+            "temperature": 0.3
+        })
+
+    # Submit all chunks in parallel
+    responses = [
+        groq_client.chat.completions.create(
+            model=groq_fast_model,
+            **prompt
+        ) for prompt in prompts
+    ]
+    print("responses", len(responses))
+
+    # Extract summaries from responses
+    for response in responses:
+        summaries.append(response.choices[0].message.content.strip())\
+
+    # Combine the summaries
+    combined_summary = "\n\n".join(summaries)
+
+    # Final pass to create cohesive summary
+    final_prompt = f"""Create a cohesive summary from these section summaries:
+
+{combined_summary}
+
+Make it clear and well-structured."""
+    print("final prompt", len(final_prompt))
+    final_response = groq_client.chat.completions.create(
+        model=groq_text_model,
+        messages=[
+            {"role": "user", "content": final_prompt}
+        ],
+        temperature=0.3,
+    )
+
+    return final_response.choices[0].message.content.strip()
+
+
 def format_elements(elements):
     """
     Formats the elements list by adding newlines between text elements and brackets around image descriptions.
-    
+
     :param elements: List of tuples (type, content, position) from extract_elements_with_positions
     :return: Formatted string with the elements properly separated
     """
@@ -64,15 +185,16 @@ Make sure to:
     formatted_text = response.choices[0].message.content
     return formatted_text.strip()
 
+
 def extract_elements_with_positions(pdf_doc, model=groq_model):
     """
     Extracts text and images from a PDF while preserving their order and positions.
     Uses both Claude and Groq models for image analysis.
-    
+
     :param pdf_path: Path to the PDF file.
     :param output_folder: Folder to save extracted images.
     :return: List of elements in order with positions [(type, content, (x, y, width, height))].
-    """ # Ensure output directory exists
+    """  # Ensure output directory exists
     elements = []
     image_queries = []
 
@@ -95,7 +217,7 @@ def extract_elements_with_positions(pdf_doc, model=groq_model):
 
             # Convert image bytes to base64 for Claude
             image_b64 = base64.b64encode(image_bytes).decode('utf-8')
-            
+
             # Store query info for both models
             image_queries.append({
                 'claude_payload': [
@@ -108,7 +230,7 @@ def extract_elements_with_positions(pdf_doc, model=groq_model):
                         },
                     },
                     {
-                        "type": "text", 
+                        "type": "text",
                         "text": "Please describe this image in less than 3 sentences."
                     }
                 ],
@@ -171,12 +293,12 @@ def test_groq_image():
     with open("test.png", "rb") as img_file:
         img_data = img_file.read()
         img_b64 = base64.b64encode(img_data).decode('utf-8')
-    
+
     # Construct the payload
     payload = {
         "messages": [
             {
-                "role": "user", 
+                "role": "user",
                 "content": [
                     {
                         "type": "image_url",
@@ -207,3 +329,6 @@ def test_groq_image():
 # test_model(claude_model)
 # test_model(groq_model)
 # test_groq_image()
+
+print(extract_text_from_zoom("https://us04web.zoom.us/rec/play/oXI-CSzD0NWzsxNATlCxBYPEZouXI9kWJ1jjMMHWN49yVAdvhZ9jUtECtVnaRy6qOTSKEH7RkN32gRx8.3tz9oNZiRYWODs8A?accessLevel=meeting&canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fus04web.zoom.us%2Frec%2Fshare%2FIFMNlVsAA2LQaRPLZDnRzoBsx48kqko3pcfZRmY3g31Vur5a4Iwy4oOdPWsHih6w.mKp3UDiKLnOClM7y%3FfromShareWithMe%3Dtrue")
+)
