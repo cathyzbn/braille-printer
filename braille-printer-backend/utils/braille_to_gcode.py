@@ -20,10 +20,14 @@ ROW_HEIGHT = 4
 PAPER_WIDTH = 215.9 / MM_PER_UNIT
 PAPER_HEIGHT = 279.4 / MM_PER_UNIT
 
-LEFT_MARGIN_WIDTH = 10
-RIGHT_MARGIN_WIDTH = 10
-TOP_MARGIN_HEIGHT = 10
-BOTTOM_MARGIN_HEIGHT = 10
+LEFT_MARGIN_WIDTH = 12
+RIGHT_MARGIN_WIDTH = 12
+TOP_MARGIN_HEIGHT = 12
+BOTTOM_MARGIN_HEIGHT = 12
+
+# Offset of the page's origin relative to the printer's origin
+LEFT_OFFSET = 23
+TOP_OFFSET = 30
 
 SPEED_LATERAL = 4000 # 4000
 SPEED_PUNCH = 800
@@ -171,8 +175,8 @@ def dot_pos_to_gcode(dot_positions: List[DotPosition]) -> List[GcodeAction]:
     for dot in dot_positions:
         if dot.punch:
             actions.append(GcodeAction("G1 X{} Y{} F{}".format(
-                dot.x,
-                dot.y,
+                dot.x + LEFT_OFFSET,
+                dot.y + TOP_OFFSET,
                 SPEED_LATERAL
             )))
             actions.append(GcodeAction("G1 E{} F{}".format(PUNCH_AMOUNT, SPEED_PUNCH), dot))
