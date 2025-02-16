@@ -4,9 +4,6 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
 import serve from "electron-serve";
 
-import { replaceTscAliasPaths } from "tsc-alias";
-replaceTscAliasPaths();
-
 import dotenv from "dotenv";
 
 dotenv.config({

@@ -7,8 +7,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const path_1 = __importDefault(require("path"));
 const electron_serve_1 = __importDefault(require("electron-serve"));
-const tsc_alias_1 = require("tsc-alias");
-(0, tsc_alias_1.replaceTscAliasPaths)();
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config({
     path: electron_1.app.isPackaged
