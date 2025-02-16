@@ -3,6 +3,7 @@
 // ------------------------------------
 import React, { useEffect, useState } from "react";
 import { VStack, Text } from "@chakra-ui/react";
+import { fetchApi } from "../../utils/api";
 
 // Each object in your Python code is:
 // {"x": float, "y": float, "punch": bool, "page": int}
@@ -38,13 +39,13 @@ export const PDFPreview: React.FC<PDFPreviewProps> = ({ page, dotPositions }) =>
 
   // This requests a PDF from the server by POSTing just the dotPositions for that page
   async function fetchPdf(pageDotPositions: DotPosition[]) {
-    const response = await fetch("http://localhost:6969/dot_pos_to_pdf", {
+    const response = await fetchApi("/dot_pos_to_pdf", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ dotPositions: pageDotPositions }),
     });
 
-    if (response.ok) {
+    if (response) {
       const blob = await response.blob();
       setPdfFile(blob);
     }

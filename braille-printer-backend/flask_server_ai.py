@@ -3,11 +3,12 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
 import anthropic
+import atexit
 
 from utils.pdf_extraction import extract_text_from_pdf
 from utils.text_to_braille import text_to_braille
 from utils.braille_to_gcode import DotPosition, dot_pos_to_pdf, get_dots_pos_and_page, dot_pos_to_gcode
-from utils.printer import pause_print, print_gcode, resume_print, stop_print
+from utils.printer import PrinterConnection, PrintStatus, pause_print, print_gcode, resume_print, stop_print
 
 DEBUG = False
 
@@ -16,6 +17,8 @@ client = anthropic.Anthropic()
 
 app = Flask(__name__)
 CORS(app)
+
+printer = None
 
 # pdf to dot positions
 # right now it's pdf to ascii
@@ -36,6 +39,25 @@ def handle_input():
         dots_pos = get_dots_pos_and_page(braille)
         return jsonify(dots_pos), 200
     return jsonify({"error": "No file provided"}), 400
+
+@app.route('/connect', methods=['POST'])
+def handle_connect():
+    global printer
+    data = request.get_json()
+    try:
+        printer = PrinterConnection(data["port"], data["baudRate"])
+        printer.connect()
+    except Exception as e:
+        printer.status = PrintStatus.ERROR
+        return jsonify({"error": str(e)}), 500
+    return jsonify({"success": True}), 200
+
+@app.route('/disconnect', methods=['POST'])
+def handle_disconnect():
+    global printer
+    printer.close()
+    printer = None
+    return jsonify({"success": True}), 200
 
 @app.route('/dot_pos_to_pdf', methods=['POST'])
 def handle_dot_pos_to_pdf():
@@ -86,6 +108,16 @@ def handle_resume_print():
     resume_print()
     return jsonify({"success": True}), 200
 
+
+def cleanup():
+    global printer
+    if printer is not None:
+        try:
+            printer.disconnect()
+        except Exception as e:
+            print(f"Error disconnecting printer: {e}")
+
+atexit.register(cleanup)
 
 if __name__ == '__main__':
     app.run(port=6969, debug=True)
