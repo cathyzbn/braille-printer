@@ -8,7 +8,7 @@ from pdf2image import convert_from_bytes
 from io import BytesIO
 
 from utils.process_text import text_to_braille
-from utils.braille_to_gcode import braille_to_pdf, braille_str_to_gcode, CharPointer
+from utils.braille_to_gcode import dot_pos_to_pdf, get_dots_pos_and_page, dot_pos_to_gcode, CharPointer
 from utils.printer import print_gcode
 
 load_dotenv()
@@ -21,67 +21,53 @@ CORS(app)
 # right now it's pdf to ascii
 @app.route('/', methods=['POST'])
 def handle_input():
-    if request.content_type.startswith("multipart/form-data"):
-        if 'file' in request.files:
-            pdf_file = request.files['file']
-            pdf_bytes = pdf_file.read()
-            images = convert_from_bytes(pdf_bytes)
-            full_transcription = ""
-            for page in images:
-                buffered = BytesIO()
-                page.save(buffered, format="PNG")
-                image_data = base64.standard_b64encode(buffered.getvalue()).decode("utf-8")
-                message_payload = [
-                    {
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": "image/png",
-                            "data": image_data,
-                        },
+    if 'file' in request.files:
+        pdf_file = request.files['file']
+        pdf_bytes = pdf_file.read()
+        images = convert_from_bytes(pdf_bytes)
+        full_transcription = ""
+        for page in images:
+            buffered = BytesIO()
+            page.save(buffered, format="PNG")
+            image_data = base64.standard_b64encode(buffered.getvalue()).decode("utf-8")
+            message_payload = [
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "image/png",
+                        "data": image_data,
                     },
-                    {
-                        "type": "text",
-                        "text": "transcribe this image to a pdf verbatim. include [image descriptions]. don't write code for this. Don't include any other commentary, just the text transcription, starting now:"
-                    }
-                ]
-                response = client.messages.create(
-                    model="claude-3-5-sonnet-20241022",
-                    max_tokens=2048,
-                    messages=[{"role": "user", "content": message_payload}]
-                )
-                transcription = response.content[0].text
-                # remove unnec spaces (i.e. "hi  jeff" -> "hi jeff")
-                # transcription = " ".join(transcription.split())
-                if isinstance(transcription, list):
-                    transcription = "".join(str(item) for item in transcription)
-                full_transcription += transcription + "\n\n"
-            braille_output = text_to_braille(full_transcription)
-            braille_to_pdf(braille_output, "braille.pdf")
-            return send_file("braille.pdf", mimetype='application/pdf')
-        return jsonify({"error": "No file provided"}), 400
-
-    elif request.is_json:
-        data = request.get_json()
-        if data.get('type') == 'text':
-            user_text = data.get('payload', "")
-            braille_output = text_to_braille(user_text)
-            return jsonify({"braille": braille_output}), 200
-        return jsonify({"error": "Invalid JSON payload"}), 400
-
-    return jsonify({"error": "Unsupported Content-Type"}), 400
+                },
+                {
+                    "type": "text",
+                    "text": "transcribe this image to a pdf verbatim. include [image descriptions]. don't write code for this. Don't include any other commentary, just the text transcription, starting now:"
+                }
+            ]
+            response = client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=2048,
+                messages=[{"role": "user", "content": message_payload}]
+            )
+            transcription = response.content[0].text
+            # remove unnec spaces (i.e. "hi  jeff" -> "hi jeff")
+            # transcription = " ".join(transcription.split())
+            if isinstance(transcription, list):
+                transcription = "".join(str(item) for item in transcription)
+            full_transcription += transcription + "\n\n"
+        braille = text_to_braille(full_transcription)
+        dots_pos = get_dots_pos_and_page(braille)
+        return jsonify(dots_pos), 200
+    return jsonify({"error": "No file provided"}), 400
 
 @app.route('/dot_pos_to_pdf', methods=['POST'])
-def dot_pos_to_pdf(dot_positions):
-    # convert dot positions to pdf
-    braille_output = ...?
-    # save a braille pdf
-    braille_to_pdf(braille_output, "braille.pdf")
+def handle_dot_pos_to_pdf(dot_positions):
+    dot_pos_to_pdf(dot_positions, "braille.pdf")
     return send_file("braille.pdf", mimetype='application/pdf')
 
 @app.route('/print_dots', methods=['POST'])
-def print_dots(dot_positions):
-    actions = dot_positions_to_gcode(dot_positions, CharPointer())
+def handle_print_dots(dot_positions):
+    actions = dot_pos_to_gcode(dot_positions, CharPointer())
     print_gcode(actions)
     return jsonify({"success—printing...": True}), 200
 
