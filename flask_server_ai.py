@@ -2,14 +2,13 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
 import anthropic
-import base64
-from pdf2image import convert_from_bytes
-from io import BytesIO
 
 from utils.pdf_extraction import extract_text_from_pdf
 from utils.process_text import text_to_braille
 from utils.braille_to_gcode import dot_pos_to_pdf, get_dots_pos_and_page, dot_pos_to_gcode
 from utils.printer import print_gcode
+
+DEBUG = False
 
 load_dotenv()
 client = anthropic.Anthropic()
@@ -25,7 +24,8 @@ def handle_input():
         pdf_file = request.files['file']
         pdf_bytes = pdf_file.read()
         transcript = extract_text_from_pdf(pdf_bytes)
-        print("DEBUG: transcript", transcript)
+        if DEBUG:
+            print("DEBUG: transcript", transcript)
         braille = text_to_braille(transcript)
         dots_pos = get_dots_pos_and_page(braille)
         return jsonify(dots_pos), 200
