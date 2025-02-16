@@ -25,8 +25,10 @@ def handle_input():
         pdf_file = request.files['file']
         pdf_bytes = pdf_file.read()
         transcript = extract_text_from_pdf(pdf_bytes)
-        print(transcript)
-        return jsonify({"text": transcript.strip()}), 200
+        print("DEBUG: transcript", transcript)
+        braille = text_to_braille(transcript)
+        dots_pos = get_dots_pos_and_page(braille)
+        return jsonify(dots_pos), 200
     return jsonify({"error": "No file provided"}), 400
 
 @app.route('/dot_pos_to_pdf', methods=['POST'])
