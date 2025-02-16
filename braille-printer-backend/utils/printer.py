@@ -78,7 +78,7 @@ class PrinterConnection:
         self.send_command("G1 E1.5 F200")
         self.send_command("G1 Z3 F800")
         # self.send_command("G1 Z10 F800")
-        input("Press Enter to continue...")
+        # input("Press Enter to continue...")
 
     def cleanup(self):
         self.send_command("G1 Z10 F800") # Move z axis up
