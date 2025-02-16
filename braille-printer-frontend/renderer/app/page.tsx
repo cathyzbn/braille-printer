@@ -19,7 +19,8 @@ import dynamic from "next/dynamic";
 // } from "../components/ui/file-upload";
 
 const DotLottieReact = dynamic(
-  () => import("@lottiefiles/dotlottie-react").then((mod) => mod.DotLottieReact),
+  () =>
+    import("@lottiefiles/dotlottie-react").then((mod) => mod.DotLottieReact),
   { ssr: false }
 );
 
@@ -162,13 +163,18 @@ export default function Home() {
             onChange={(e) => setText(e.target.value)}
           />
           <HStack>
-          <Button onClick={() => {submitPdf()}} disabled={isProcessingPdf} variant="outline">
+            <Button
+              onClick={() => {
+                submitPdf();
+              }}
+              disabled={isProcessingPdf}
+              variant="outline"
+            >
               Attach File
             </Button>
             <Button onClick={submitText} disabled={isProcessingPdf}>
               Submit Text
             </Button>
-
           </HStack>
           <Input
             type="file"
@@ -197,15 +203,39 @@ export default function Home() {
                 await printCurrentPage();
                 setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
               }}
-              disabled={currPage >= dotPositions.length  || isPrinting}
+              disabled={currPage >= dotPositions.length || isPrinting}
             >
               Print and proceed to next page
             </Button>
-            <Button color="red.400" onClick={()=>{
-              
-            }}>STOP</Button>
-            <Button>PAUSE</Button>
-            <Button color="green">RESUME</Button>
+            <Button
+              color="red.400"
+              onClick={() => {
+                fetch("http://localhost:6969/stop_print", {
+                  method: "POST",
+                });
+              }}
+            >
+              STOP
+            </Button>
+            <Button
+              onClick={() => {
+                fetch("http://localhost:6969/pause_print", {
+                  method: "POST",
+                });
+              }}
+            >
+              PAUSE
+            </Button>
+            <Button
+              color="green"
+              onClick={() => {
+                fetch("http://localhost:6969/resume_print", {
+                  method: "POST",
+                });
+              }}
+            >
+              RESUME
+            </Button>
           </HStack>
         </VStack>
       )}
