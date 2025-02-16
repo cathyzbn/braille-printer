@@ -17,6 +17,8 @@ client = anthropic.Anthropic()
 app = Flask(__name__)
 CORS(app)
 
+DEBUG = False
+
 # pdf to dot positions
 # right now it's pdf to ascii
 @app.route('/', methods=['POST'])
@@ -25,7 +27,8 @@ def handle_input():
         pdf_file = request.files['file']
         pdf_bytes = pdf_file.read()
         transcript = extract_text_from_pdf(pdf_bytes)
-        print("DEBUG: transcript", transcript)
+        if DEBUG:
+            print("DEBUG: transcript", transcript)
         braille = text_to_braille(transcript)
         dots_pos = get_dots_pos_and_page(braille)
         return jsonify(dots_pos), 200
