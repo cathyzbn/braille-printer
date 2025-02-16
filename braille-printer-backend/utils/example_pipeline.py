@@ -1,4 +1,4 @@
-from process_text import text_to_braille
+from text_to_braille import text_to_braille
 from braille_to_gcode import braille_str_to_gcode, CharPointer
 from printer import print_gcode
 

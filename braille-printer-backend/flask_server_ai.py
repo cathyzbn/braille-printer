@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import anthropic
 
 from utils.pdf_extraction import extract_text_from_pdf
-from utils.process_text import text_to_braille
+from utils.text_to_braille import text_to_braille
 from utils.braille_to_gcode import dot_pos_to_pdf, get_dots_pos_and_page, dot_pos_to_gcode
 from utils.printer import print_gcode
 

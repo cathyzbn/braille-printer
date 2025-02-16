@@ -2,8 +2,7 @@ from flask import Flask, request, jsonify
 from PyPDF2 import PdfReader
 from flask_cors import CORS
 
-from utils.braille_to_gcode import braille_to_pdf
-from utils.process_text import text_to_braille
+from utils.text_to_braille import text_to_braille
 
 app = Flask(__name__)
 CORS(app)  # Allow requests from your Next.js app

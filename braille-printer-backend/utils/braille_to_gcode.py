@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Tuple
 import fpdf
 
-from utils.process_text import text_to_braille
+from utils.text_to_braille import text_to_braille
 
 # Constants
 MM_PER_UNIT = 2 # change for font
