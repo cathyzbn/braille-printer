@@ -5,8 +5,8 @@ import {
   HStack,
   Text,
   VStack,
-  Input,
   Button,
+  Textarea,
   Spinner,
   Icon,
 } from "@chakra-ui/react";
@@ -149,7 +149,7 @@ export default function Home() {
           <Text fontSize="xl">Enter text or upload a PDF</Text>
 
           {/* TEXT INPUT (disabled if a PDF is already chosen) */}
-          <Input
+          <Textarea
             placeholder="Enter text here"
             value={text}
             onChange={(e) => {
@@ -260,7 +260,7 @@ export default function Home() {
                 });
               }}
             >
-              <Icon as={FaPause} />
+              <Icon as={FaPause}  />
               PAUSE
             </Button>
             <Button
