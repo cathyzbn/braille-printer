@@ -206,12 +206,9 @@ class PrinterConnection:
         return self.status
 
 
-printer = PrinterConnection(port, baud_rate)
-
-def print_gcode(gcode_actions: List[GcodeAction]):
+def print_gcode(gcode_actions: List[GcodeAction], printer: PrinterConnection):
     def print_thread():
         try:
-            printer.connect()
             printer.initialize()
             printer.status = PrintStatus.PRINTING
             
@@ -236,8 +233,6 @@ def print_gcode(gcode_actions: List[GcodeAction]):
         except Exception as e:
             print(f"Error: {e}")
             printer.status = PrintStatus.ERROR
-        finally:
-            printer.close()
 
     if DEBUG:
         print("DEBUG: starting print thread")
@@ -247,30 +242,30 @@ def print_gcode(gcode_actions: List[GcodeAction]):
         print("DEBUG: print thread started")
     return printer  # Return printer object so caller can control/monitor the print
 
-def stop_print():
+def stop_print(printer: PrinterConnection):
     if DEBUG:
         print("DEBUG: stopping print")
     printer.stop()
     if DEBUG:
         print("DEBUG: print stopped")
 
-def pause_print():
+def pause_print(printer: PrinterConnection):
     if DEBUG:
         print("DEBUG: pausing print")
     printer.pause()
     if DEBUG:
         print("DEBUG: print paused")
 
-def resume_print():
+def resume_print(printer: PrinterConnection):
     if DEBUG:
         print("DEBUG: resuming print")
     printer.resume()
     if DEBUG:
         print("DEBUG: print resumed")
 
-def print_dots(dots: List[DotPosition]):
+def print_dots(dots: List[DotPosition], printer: PrinterConnection):
     gcode_actions = dot_pos_to_gcode(dots)
-    return print_gcode(gcode_actions)
+    return print_gcode(gcode_actions, printer)
 
 def main():
     printer = PrinterConnection(port, baud_rate)
