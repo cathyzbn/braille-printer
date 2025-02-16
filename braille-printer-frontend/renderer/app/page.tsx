@@ -12,7 +12,8 @@ import {
 } from "@chakra-ui/react";
 
 import { toaster, Toaster } from "../components/ui/toaster";
-import { PDFPreview, DotPositions } from "../components/ui/pdf-preview";
+import { DotPositions } from "../components/ui/pdf-preview";
+import { PDFLive } from "../components/ui/pdf-live";
 import dynamic from "next/dynamic";
 import { Connector } from "../components/connector";
 import { fetchApi } from "../utils/api";
@@ -222,16 +223,16 @@ export default function Home() {
 
             <Text>Page {currPage + 1}</Text>
             <Button
-              onClick={() => {
-                setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
-              }}
+                onClick={() => {
+                  setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
+                }}
               disabled={currPage >= dotPositions.length - 1}
               variant="outline"
             >
               Next
             </Button>
           </HStack>
-          <PDFPreview page={currPage} dotPositions={dotPositions} />
+          <PDFLive page={currPage} dotPositions={dotPositions} />
           <HStack>
             <Button
               onClick={async () => {
@@ -247,7 +248,6 @@ export default function Home() {
                 fetchApi("/stop_print", {
                   method: "POST",
                 });
-                setDotPositions([]);
               }}
             >
               <Icon as={FaStop} />
@@ -274,6 +274,13 @@ export default function Home() {
               <Icon as={FaPlay} />
               RESUME
             </Button>
+            <Button
+              onClick={() => {
+                setDotPositions([]);
+              }}
+            >
+              EXIT
+              </Button>
           </HStack>
         </VStack>
       )}

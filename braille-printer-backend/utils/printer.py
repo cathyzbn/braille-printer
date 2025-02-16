@@ -86,7 +86,7 @@ class PrinterConnection:
         if self.ser and self.ser.is_open:
             self.send_command("G1 Z10 F800") # Move z axis up
             self.send_command("G28 X0 Y0")   # Zero X and Y
-            self.send_command("G1 Z50 F800") # Move z axis up so can easily remove page
+            self.send_command("G1 Z10 F800") # Move z axis up so can easily remove page
 
     def wait_for_start(self, timeout=10):
         """Wait for the printer to send 'start' after connecting."""
@@ -222,6 +222,7 @@ def print_gcode(gcode_actions: List[GcodeAction], printer: PrinterConnection):
                         break
                         
                 printer.send_command(action.command)
+                action.callback()
                 
             if not printer._stop_event.is_set():
                 printer.cleanup()
