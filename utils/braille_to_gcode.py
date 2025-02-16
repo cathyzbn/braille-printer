@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Tuple
 import fpdf
 
-from process_text import text_to_braille
+from utils.process_text import text_to_braille
 
 # Constants
 MM_PER_UNIT = 2 # change for font
@@ -137,6 +137,8 @@ def dot_pos_to_pdf(dot_positions: List[DotPosition], output_file: str) -> None:
                        DIST_DIAM_DOT * MM_PER_UNIT, 'D')
     
     pdf.output(output_file)
+
+    
 
 
 def dot_pos_to_gcode(dot_positions: List[DotPosition]) -> List[GcodeAction]:
