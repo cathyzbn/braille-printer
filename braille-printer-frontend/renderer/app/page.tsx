@@ -10,6 +10,7 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { toaster, Toaster } from "../components/ui/toaster";
+import { PDFPreview } from "../components/ui/pdf-preview";
 import dynamic from "next/dynamic";
 
 const DotLottieReact = dynamic(
@@ -135,11 +136,15 @@ export default function Home() {
           <VStack id="braille-pdf-container"></VStack>
         </VStack>
       )}
-      {dotPositions && (
+      {Object.keys(dotPositions).length !== 0 && (
         <VStack w="100%" p={3}>
-          <Heading fontSize="2xl">Page {currPage}</Heading>
-          <PDFPreview page={currPage}/>
-          <Button onClick={() => setCurrPage(currPage + 1)} disabled={currPage === 0}>Print</Button>
+          <PDFPreview page={currPage} />
+          <Button
+            onClick={() => setCurrPage(currPage + 1)}
+            disabled={currPage === 0}
+          >
+            Print
+          </Button>
         </VStack>
       )}
     </VStack>
