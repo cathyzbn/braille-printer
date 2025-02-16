@@ -67,6 +67,7 @@ export default function Home() {
     }
   };
 
+
   useEffect(() => {
     window.electronAPI?.setTitle("Braille Printer");
   }, []);
@@ -123,6 +124,7 @@ export default function Home() {
             <Button
               onClick={() =>
                 setCurrPage(Math.min(dotPositions.length - 1, currPage + 1))
+
               }
               disabled={currPage >= dotPositions.length - 1}
             >
