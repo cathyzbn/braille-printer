@@ -7,7 +7,7 @@ import atexit
 
 from utils.pdf_extraction import extract_text_from_pdf
 from utils.text_to_braille import text_to_braille
-from utils.braille_to_gcode import DotPosition, dot_pos_to_pdf, get_dots_pos_and_page, dot_pos_to_gcode
+from utils.braille_to_gcode import DotPosition, dot_pos_to_pdf, get_dots_pos_and_page, dot_pos_to_gcode, printed_dots
 from utils.printer import PrinterConnection, PrintStatus, pause_print, print_gcode, resume_print, stop_print
 
 DEBUG = False
@@ -55,8 +55,9 @@ def handle_connect():
 @app.route('/disconnect', methods=['POST'])
 def handle_disconnect():
     global printer
-    printer.close()
-    printer = None
+    if printer is not None:
+        printer.close()
+        printer = None
     return jsonify({"success": True}), 200
 
 @app.route('/dot_pos_to_pdf', methods=['POST'])
@@ -81,6 +82,10 @@ def handle_dot_pos_to_pdf():
         download_name="braille.pdf"
     )
 
+@app.route('/printed_dots', methods=['POST'])
+def handle_printed_dots():
+    return jsonify(printed_dots.dots), 200
+
 @app.route('/print_dots', methods=['POST'])
 def handle_print_dots():
     data = request.get_json()
@@ -96,6 +101,7 @@ def handle_print_dots():
 @app.route('/stop_print', methods=['POST'])
 def handle_stop_print():
     stop_print(printer)
+    printed_dots.clear()
     return jsonify({"success": True}), 200
 
 @app.route('/pause_print', methods=['POST'])
@@ -114,6 +120,7 @@ def cleanup():
     if printer is not None:
         try:
             printer.close()
+            printer = None
         except Exception as e:
             print(f"Error disconnecting printer: {e}")
 

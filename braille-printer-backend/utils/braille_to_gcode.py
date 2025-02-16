@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 import fpdf
 
 from utils.text_to_braille import text_to_braille
@@ -35,6 +35,18 @@ ACTUAL_ROW_HEIGHT = (PAPER_HEIGHT - TOP_MARGIN_HEIGHT - BOTTOM_MARGIN_HEIGHT - C
 
 DEBUG = False
 
+class PrintedDots:
+    def __init__(self):
+        self.dots = []
+
+    def clear(self):
+        self.dots = []
+
+    def append(self, dot):
+        self.dots.append(dot)
+
+printed_dots = PrintedDots()
+
 @dataclass
 class DotPosition:
     """
@@ -44,6 +56,9 @@ class DotPosition:
     y: float
     punch: bool
     page: int = 0
+
+    def copy(self):
+        return DotPosition(self.x, self.y, self.punch, self.page)
 
 @dataclass 
 class DotRelativeLocation:
@@ -80,8 +95,13 @@ class BrailleChar:
         return locations
 
 class GcodeAction:
-    def __init__(self, command: str) -> None:
+    def __init__(self, command: str, dot: DotPosition = None) -> None:
         self.command = command
+        self.dot = dot.copy() if dot else None
+
+    def callback(self):
+        if self.dot:
+            printed_dots.append(self.dot)
 
     def __str__(self) -> str:
         return self.command
@@ -147,6 +167,7 @@ def dot_pos_to_pdf(dot_positions: List[DotPosition]) -> fpdf.FPDF:
 def dot_pos_to_gcode(dot_positions: List[DotPosition]) -> List[GcodeAction]:
     """Convert dot positions to GCODE commands"""
     actions = []
+    printed_dots.clear()
     for dot in dot_positions:
         if dot.punch:
             actions.append(GcodeAction("G1 X{} Y{} F{}".format(
@@ -154,7 +175,7 @@ def dot_pos_to_gcode(dot_positions: List[DotPosition]) -> List[GcodeAction]:
                 dot.y,
                 SPEED_LATERAL
             )))
-            actions.append(GcodeAction("G1 E{} F{}".format(PUNCH_AMOUNT, SPEED_PUNCH)))
+            actions.append(GcodeAction("G1 E{} F{}".format(PUNCH_AMOUNT, SPEED_PUNCH), dot))
     return actions
 
 

@@ -12,7 +12,8 @@ import {
 } from "@chakra-ui/react";
 
 import { toaster, Toaster } from "../components/ui/toaster";
-import { PDFPreview, DotPositions } from "../components/ui/pdf-preview";
+import { DotPositions } from "../components/ui/pdf-preview";
+import { PDFLive } from "../components/ui/pdf-live";
 import dynamic from "next/dynamic";
 import { Connector } from "../components/connector";
 import { fetchApi } from "../utils/api";
@@ -48,7 +49,7 @@ export default function Home() {
   const [dotPositions, setDotPositions] = useState<DotPositions>([]);
   const [currPage, setCurrPage] = useState(0);
   const [isPrinting, setIsPrinting] = useState(false);
-  const [isConnected, setIsConnected] = useState(true);
+  const [isConnected, setIsConnected] = useState(false);
 
   const submitText = async () => {
     if (!text.trim()) return;
@@ -209,7 +210,8 @@ export default function Home() {
 
       {isConnected && dotPositions.length !== 0 && (
         <VStack w="100%" p={3}>
-          <PDFPreview page={currPage} dotPositions={dotPositions} />
+          {/* <PDFPreview page={currPage} dotPositions={dotPositions} /> */}
+          <PDFLive page={currPage} dotPositions={dotPositions} />
           <HStack>
             {currPage > 0 && (
               <Button
@@ -234,7 +236,6 @@ export default function Home() {
                 fetchApi("/stop_print", {
                   method: "POST",
                 });
-                setDotPositions([]);
               }}
             >
               <Icon as={FaStop} />
@@ -261,7 +262,7 @@ export default function Home() {
               <Icon as={FaPlay} />
               RESUME
             </Button>
-            {currPage < dotPositions.length - 1 && (
+            {currPage < dotPositions.length - 1 ? (
               <Button
                 onClick={() => {
                   setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
@@ -269,6 +270,14 @@ export default function Home() {
               disabled={currPage >= dotPositions.length - 1}
             >
                 NEXT
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  setDotPositions([]);
+                }}
+              >
+                EXIT
               </Button>
             )}
           </HStack>

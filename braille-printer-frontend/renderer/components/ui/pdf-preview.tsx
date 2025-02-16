@@ -17,7 +17,7 @@ export interface DotPosition {
 // The Python code returns: DotPosition[][] (array of pages)
 export type DotPositions = DotPosition[][];
 
-interface PDFPreviewProps {
+export interface PDFPreviewProps {
   // Which page do we want to preview?
   page: number;
   // The entire array-of-arrays of dot positions
