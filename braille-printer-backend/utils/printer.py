@@ -1,12 +1,23 @@
 from typing import List
 import serial
 import time
+import threading
+from enum import Enum
 
 from utils.braille_to_gcode import DotPosition, GcodeAction, dot_pos_to_gcode
 
 # Replace with your printer's correct port
 port = "/dev/tty.usbserial-0001"
 baud_rate = 250000  # Adjust this to match your printer's baud rate
+
+DEBUG = True
+
+class PrintStatus(Enum):
+    IDLE = "idle"
+    PRINTING = "printing" 
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    ERROR = "error"
 
 def calculate_checksum(command):
     """Calculate Marlin-style checksum for a G-code command."""
@@ -24,6 +35,10 @@ class PrinterConnection:
         self.line_number = 0
         self.E_steps_per_unit = 400.0
         self.E_steps_per_degree = 8 * 0.9
+        self.status = PrintStatus.IDLE
+        self.print_thread = None
+        self._stop_event = threading.Event()
+        self._pause_event = threading.Event()
 
     def connect(self):
         """Establish connection and perform initial handshake."""
@@ -65,7 +80,7 @@ class PrinterConnection:
         self.send_command("G1 E1.5 F200")
         self.send_command("G1 Z3 F800")
         # self.send_command("G1 Z10 F800")
-        input("Press Enter to continue...")
+        # input("Press Enter to continue...")
 
     def cleanup(self):
         self.send_command("G1 Z10 F800") # Move z axis up
@@ -158,29 +173,97 @@ class PrinterConnection:
             self.ser.close()
             print("Connection closed.")
 
-def print_gcode(gcode_actions: List[GcodeAction]):
-    printer = PrinterConnection(port, baud_rate)
-    try:
-        printer.connect()
-        printer.initialize()
-        for action in gcode_actions:
-            printer.send_command(action.command)
-        printer.cleanup()
-    except serial.SerialException as e:
-        print(f"Serial error: {e}")
-    except KeyboardInterrupt:
-        print("Cleaning up...")
-        printer.cleanup()
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        printer.close()
+    def stop(self):
+        """Stop the current print job."""
+        self._stop_event.set()
+        if self.print_thread:
+            self.print_thread.join()
+        self._stop_event.clear()
+        self.status = PrintStatus.IDLE
+        self.cleanup()
 
+    def pause(self):
+        """Pause the current print job."""
+        if self.status == PrintStatus.PRINTING:
+            self._pause_event.set()
+            self.status = PrintStatus.PAUSED
+
+    def resume(self):
+        """Resume the paused print job."""
+        if self.status == PrintStatus.PAUSED:
+            self._pause_event.clear()
+            self.status = PrintStatus.PRINTING
+
+    def get_status(self):
+        """Get the current status of the printer."""
+        return self.status
+
+
+printer = PrinterConnection(port, baud_rate)
+
+def print_gcode(gcode_actions: List[GcodeAction]):
+    def print_thread():
+        try:
+            printer.connect()
+            printer.initialize()
+            printer.status = PrintStatus.PRINTING
+            
+            for action in gcode_actions:
+                if printer._stop_event.is_set():
+                    break
+                    
+                while printer._pause_event.is_set():
+                    time.sleep(0.1)
+                    if printer._stop_event.is_set():
+                        break
+                        
+                printer.send_command(action.command)
+                
+            if not printer._stop_event.is_set():
+                printer.cleanup()
+                printer.status = PrintStatus.COMPLETED
+                
+        except serial.SerialException as e:
+            print(f"Serial error: {e}")
+            printer.status = PrintStatus.ERROR
+        except Exception as e:
+            print(f"Error: {e}")
+            printer.status = PrintStatus.ERROR
+        finally:
+            printer.close()
+
+    if DEBUG:
+        print("DEBUG: starting print thread")
+    printer.print_thread = threading.Thread(target=print_thread)
+    printer.print_thread.start()
+    if DEBUG:
+        print("DEBUG: print thread started")
+    return printer  # Return printer object so caller can control/monitor the print
+
+def stop_print():
+    if DEBUG:
+        print("DEBUG: stopping print")
+    printer.stop()
+    if DEBUG:
+        print("DEBUG: print stopped")
+
+def pause_print():
+    if DEBUG:
+        print("DEBUG: pausing print")
+    printer.pause()
+    if DEBUG:
+        print("DEBUG: print paused")
+
+def resume_print():
+    if DEBUG:
+        print("DEBUG: resuming print")
+    printer.resume()
+    if DEBUG:
+        print("DEBUG: print resumed")
 
 def print_dots(dots: List[DotPosition]):
     gcode_actions = dot_pos_to_gcode(dots)
-    print_gcode(gcode_actions)
-
+    return print_gcode(gcode_actions)
 
 def main():
     printer = PrinterConnection(port, baud_rate)
