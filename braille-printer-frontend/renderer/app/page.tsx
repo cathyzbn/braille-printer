@@ -122,111 +122,112 @@ export default function Home() {
       />
 
       {isConnected && dotPositions.length === 0 && (
-        <>
-          <VStack w="80%" p={3}>
-            <Text fontSize="xl">Enter text or upload a PDF</Text>
+        <VStack w="80%" p={3}>
+          <Text fontSize="xl">Enter text or upload a PDF</Text>
 
-            {/* TEXT INPUT (disabled if a PDF is already chosen) */}
-            <Input
-              placeholder="Enter text here"
-              value={text}
-              onChange={(e) => {
-                setText(e.target.value);
-                if (e.target.value) {
-                  // if user starts typing, remove any selected PDF
-                  setPdfFile(null);
+          {/* TEXT INPUT (disabled if a PDF is already chosen) */}
+          <Input
+            placeholder="Enter text here"
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              if (e.target.value) {
+                // if user starts typing, remove any selected PDF
+                setPdfFile(null);
+              }
+            }}
+            disabled={!!pdfFile}
+          />
+
+          {/* SUBMIT BUTTONS */}
+          <HStack w="100%" alignItems="start" justifyContent="flex-end">
+            <FileUploadRoot
+              accept=".pdf"
+              onChange={(event) => {
+                const files = (event.target as HTMLInputElement).files;
+                if (files && files.length > 0) {
+                  setPdfFile(files[0]);
+                  setText(""); // if user chooses a PDF, clear any typed text
                 }
               }}
-              disabled={!!pdfFile}
-            />
+            >
+              <FileUploadTrigger asChild>
+                <Button
+                  variant="outline"
+                  disabled={isProcessingPdf || !!text}
+                  // leftIcon={<HiUpload />}
+                >
+                  Attach File
+                </Button>
+              </FileUploadTrigger>
+              <FileUploadList />
+            </FileUploadRoot>
+            <Button
+              onClick={() => {
+                if (text.trim()) {
+                  submitText();
+                } else {
+                  submitPdf();
+                }
+              }}
+            >
+              Submit
+            </Button>
+          </HStack>
 
-            {/* SUBMIT BUTTONS */}
-            <HStack w="100%" alignItems="start" justifyContent="flex-end">
-              <FileUploadRoot
-                accept=".pdf"
-                onChange={(event) => {
-                  const files = (event.target as HTMLInputElement).files;
-                  if (files && files.length > 0) {
-                    setPdfFile(files[0]);
-                    setText(""); // if user chooses a PDF, clear any typed text
-                  }
-                }}
-              >
-                <FileUploadTrigger asChild>
-                  <Button
-                    variant="outline"
-                    disabled={isProcessingPdf || !!text}
-                    // leftIcon={<HiUpload />}
-                  >
-                    Attach File
-                  </Button>
-                </FileUploadTrigger>
-                <FileUploadList />
-              </FileUploadRoot>
-              <Button
-                onClick={() => {
-                  if (text.trim()) {
-                    submitText();
-                  } else {
-                    submitPdf();
-                  }
-                }}
-              >
-                Submit
-              </Button>
+          {isProcessingPdf && (
+            <HStack mt={2}>
+              <Spinner size="sm" />
+              <Text>Processing...</Text>
             </HStack>
+          )}
+        </VStack>
+      )}
 
-            {isProcessingPdf && (
-              <HStack mt={2}>
-                <Spinner size="sm" />
-                <Text>Processing...</Text>
-              </HStack>
-            )}
-          </VStack>
-          <VStack w="100%" p={3}>
-            <PDFPreview page={currPage} dotPositions={dotPositions} />
-            <HStack>
-              <Button
-                onClick={async () => {
-                  await printCurrentPage();
-                  setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
-                }}
-                disabled={currPage >= dotPositions.length || isPrinting}
-              >
-                Print and proceed to next page
-              </Button>
-              <Button
-                color="red.400"
-                onClick={() => {
-                  fetchApi("/stop_print", {
-                    method: "POST",
-                  });
-                }}
-              >
-                STOP
-              </Button>
-              <Button
-                onClick={() => {
-                  fetchApi("/pause_print", {
-                    method: "POST",
-                  });
-                }}
-              >
-                PAUSE
-              </Button>
-              <Button
-                color="green"
-                onClick={() => {
-                  fetchApi("/resume_print", {
-                    method: "POST",
-                  });
-                }}
-              >
-                RESUME
-              </Button>
-            </HStack>
-          </VStack>
-        </>
+      {isConnected && dotPositions.length !== 0 && (
+        <VStack w="100%" p={3}>
+          <PDFPreview page={currPage} dotPositions={dotPositions} />
+          <HStack>
+            <Button
+              onClick={async () => {
+                await printCurrentPage();
+                setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
+              }}
+              disabled={currPage >= dotPositions.length || isPrinting}
+            >
+              Print and proceed to next page
+            </Button>
+            <Button
+              color="red.400"
+              onClick={() => {
+                fetchApi("/stop_print", {
+                  method: "POST",
+                });
+              }}
+            >
+              STOP
+            </Button>
+            <Button
+              onClick={() => {
+                fetchApi("/pause_print", {
+                  method: "POST",
+                });
+              }}
+            >
+              PAUSE
+            </Button>
+            <Button
+              color="green"
+              onClick={() => {
+                fetchApi("/resume_print", {
+                  method: "POST",
+                });
+              }}
+            >
+              RESUME
+            </Button>
+          </HStack>
+        </VStack>
       )}
     </VStack>
   );
