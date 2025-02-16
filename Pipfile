@@ -13,6 +13,9 @@ anthropic = "*"
 fpdf = "*"
 pybrl = {git = "git+https://github.com/ant0nisk/pybrl.git"}
 pdf2image = "*"
+fitz = "*"
+pymupdf = "*"
+groq = "*"
 
 [dev-packages]
 
