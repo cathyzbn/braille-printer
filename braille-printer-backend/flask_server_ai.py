@@ -30,6 +30,11 @@ def handle_input():
         braille = text_to_braille(transcript)
         dots_pos = get_dots_pos_and_page(braille)
         return jsonify(dots_pos), 200
+    elif 'text' in request.form:
+        transcript = request.form['text']
+        braille = text_to_braille(transcript)
+        dots_pos = get_dots_pos_and_page(braille)
+        return jsonify(dots_pos), 200
     return jsonify({"error": "No file provided"}), 400
 
 @app.route('/dot_pos_to_pdf', methods=['POST'])

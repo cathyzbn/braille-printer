@@ -12,6 +12,11 @@ import {
 import { toaster, Toaster } from "../components/ui/toaster";
 import { PDFPreview, DotPositions } from "../components/ui/pdf-preview";
 import dynamic from "next/dynamic";
+// import {
+//   FileUploadList,
+//   FileUploadRoot,
+//   FileUploadTrigger,
+// } from "../components/ui/file-upload";
 
 const DotLottieReact = dynamic(
   () => import("@lottiefiles/dotlottie-react").then((mod) => mod.DotLottieReact),
@@ -21,11 +26,47 @@ const DotLottieReact = dynamic(
 export default function Home() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [isProcessingPdf, setIsProcessingPdf] = useState(false);
+  const [text, setText] = useState("");
+  const [shouldAttachFile, setShouldAttachFile] = useState(false);
 
-  // Array of pages, each page is an array of DotPosition
   const [dotPositions, setDotPositions] = useState<DotPositions>([]);
   const [currPage, setCurrPage] = useState(0);
   const [isPrinting, setIsPrinting] = useState(false);
+
+  const submitText = async () => {
+    setIsProcessingPdf(true);
+    try {
+      const formData = new FormData();
+      formData.append("type", "text");
+      formData.append("text", text);
+      const response = await fetch("http://localhost:6969", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        toaster.success({
+          title: "Success",
+          description: "Text transcribed successfully!",
+        });
+        const braillePositions: DotPositions = await response.json();
+        setDotPositions(braillePositions);
+        setCurrPage(0);
+      } else {
+        toaster.error({
+          title: "Error",
+          description: "Failed to transcribe text.",
+        });
+      }
+    } catch {
+      toaster.error({
+        title: "Error",
+        description: "An unexpected error occurred while sending text.",
+      });
+    } finally {
+      setIsProcessingPdf(false);
+    }
+  };
 
   const submitPdf = async () => {
     if (!pdfFile) return;
@@ -115,7 +156,20 @@ export default function Home() {
 
       {dotPositions.length === 0 && (
         <VStack w="100%" p={3}>
-          <Text fontSize="xl">Upload a PDF file to get started</Text>
+          <Text fontSize="xl">Enter text to get started</Text>
+          <Input
+            placeholder="Enter text here"
+            onChange={(e) => setText(e.target.value)}
+          />
+          <HStack>
+          <Button onClick={() => {submitPdf()}} disabled={isProcessingPdf} variant="outline">
+              Attach File
+            </Button>
+            <Button onClick={submitText} disabled={isProcessingPdf}>
+              Submit Text
+            </Button>
+
+          </HStack>
           <Input
             type="file"
             accept=".pdf"
@@ -125,9 +179,6 @@ export default function Home() {
               }
             }}
           />
-          <Button onClick={submitPdf} disabled={isProcessingPdf}>
-            Submit PDF
-          </Button>
           {isProcessingPdf && (
             <HStack mt={2}>
               <Spinner size="sm" />
@@ -146,10 +197,15 @@ export default function Home() {
                 await printCurrentPage();
                 setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
               }}
-              disabled={currPage >= dotPositions.length - 1 || isPrinting}
+              disabled={currPage >= dotPositions.length  || isPrinting}
             >
               Print and proceed to next page
             </Button>
+            <Button color="red.400" onClick={()=>{
+              
+            }}>STOP</Button>
+            <Button>PAUSE</Button>
+            <Button color="green">RESUME</Button>
           </HStack>
         </VStack>
       )}
