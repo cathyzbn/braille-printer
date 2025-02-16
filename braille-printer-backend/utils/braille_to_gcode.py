@@ -5,7 +5,7 @@ import fpdf
 from utils.text_to_braille import text_to_braille
 
 # Constants
-MM_PER_UNIT = 2 # change for font
+MM_PER_UNIT = 1.5 # change for font
 # Diameter of one dot is 1 unit
 DIST_DIAM_DOT = 1
 DIST_BETWEEN_DOTS = 1
@@ -20,10 +20,10 @@ ROW_HEIGHT = 4
 PAPER_WIDTH = 215.9 / MM_PER_UNIT
 PAPER_HEIGHT = 279.4 / MM_PER_UNIT
 
-LEFT_MARGIN_WIDTH = 12
-RIGHT_MARGIN_WIDTH = 12
-TOP_MARGIN_HEIGHT = 12
-BOTTOM_MARGIN_HEIGHT = 12
+LEFT_MARGIN_WIDTH = 25 / MM_PER_UNIT
+RIGHT_MARGIN_WIDTH = 25 / MM_PER_UNIT
+TOP_MARGIN_HEIGHT = 25 / MM_PER_UNIT
+BOTTOM_MARGIN_HEIGHT = 25 / MM_PER_UNIT
 
 # Offset of the page's origin relative to the printer's origin
 LEFT_OFFSET = 23
