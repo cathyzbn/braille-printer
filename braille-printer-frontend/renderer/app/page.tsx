@@ -121,18 +121,12 @@ export default function Home() {
           <PDFPreview page={currPage} dotPositions={dotPositions} />
           <HStack>
             <Button
-              onClick={() => setCurrPage(Math.max(0, currPage - 1))}
-              disabled={currPage <= 0}
-            >
-              Previous Page
-            </Button>
-            <Button
               onClick={() =>
                 setCurrPage(Math.min(dotPositions.length - 1, currPage + 1))
               }
               disabled={currPage >= dotPositions.length - 1}
             >
-              Next Page
+              Print and proceed to next page
             </Button>
           </HStack>
         </VStack>
