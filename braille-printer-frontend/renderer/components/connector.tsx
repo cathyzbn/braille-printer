@@ -73,7 +73,7 @@ export const Connector = ({ isConnected, setIsConnected }: ConnectorProps) => {
   };
 
   if (isConnected) {
-    return <Button onClick={disconnect} loading={loading}>Disconnect</Button>;
+    return <Button onClick={disconnect} loading={loading} variant="outline" marginRight={0}>Disconnect</Button>;
   }
   
   return (
