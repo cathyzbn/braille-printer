@@ -5,7 +5,7 @@ export async function fetchApi(path: string, options: RequestInit, { errorTitle 
   try {
     const response = await fetch(`http://localhost:6969${path}`, options);
     if (response.ok) {
-      return response
+      return response;
     } else {
       try {
         const data = await response.json();
