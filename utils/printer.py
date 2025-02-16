@@ -2,7 +2,7 @@ from typing import List
 import serial
 import time
 
-from braille_to_gcode import GcodeAction
+from utils.braille_to_gcode import GcodeAction
 
 # Replace with your printer's correct port
 port = "/dev/tty.usbserial-0001"
