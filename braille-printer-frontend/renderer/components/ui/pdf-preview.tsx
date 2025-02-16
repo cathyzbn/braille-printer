@@ -1,14 +1,68 @@
+// ------------------------------------
+// pdf-preview.tsx
+// ------------------------------------
+import React, { useEffect, useState } from "react";
 import { VStack, Text } from "@chakra-ui/react";
-import React from "react";
 
-interface PDFPreviewProps {
+// Each object in your Python code is:
+// {"x": float, "y": float, "punch": bool, "page": int}
+export interface DotPosition {
+  x: number;
+  y: number;
+  punch: boolean;
   page: number;
 }
 
-export const PDFPreview: React.FC<PDFPreviewProps> = ({ page }) => {
+// The Python code returns: DotPosition[][] (array of pages)
+export type DotPositions = DotPosition[][];
+
+interface PDFPreviewProps {
+  // Which page do we want to preview?
+  page: number;
+  // The entire array-of-arrays of dot positions
+  dotPositions: DotPositions;
+}
+
+export const PDFPreview: React.FC<PDFPreviewProps> = ({ page, dotPositions }) => {
+  // This holds the PDF we fetch back from your server
+  const [pdfFile, setPdfFile] = useState<Blob | null>(null);
+
+  useEffect(() => {
+    if (dotPositions.length === 0) return;
+    // Make sure we don’t go out of bounds
+    if (page < 0 || page >= dotPositions.length) return;
+
+    // For demonstration, we pass just the page we want
+    fetchPdf(dotPositions[page]);
+  }, [page, dotPositions]);
+
+  // This requests a PDF from the server by POSTing just the dotPositions for that page
+  async function fetchPdf(pageDotPositions: DotPosition[]) {
+    const response = await fetch("http://localhost:6969/dot_pos_to_pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dotPositions: pageDotPositions }),
+    });
+
+    if (response.ok) {
+      const blob = await response.blob();
+      setPdfFile(blob);
+    }
+  }
+
   return (
     <VStack>
-      <Text>Displaying page {page} of the PDF.</Text>
+      <Text>Displaying page {page + 1} of the PDF.</Text>
+      {pdfFile && (
+        <object
+          data={URL.createObjectURL(pdfFile)}
+          type="application/pdf"
+          width="600"
+          height="400"
+        >
+          <p>PDF cannot be displayed.</p>
+        </object>
+      )}
     </VStack>
   );
 };
