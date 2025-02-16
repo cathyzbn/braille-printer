@@ -222,26 +222,15 @@ export default function Home() {
             </Button>
 
             <Text>Page {currPage + 1}</Text>
-            {currPage < dotPositions.length - 1 ? (
-              <Button
+            <Button
                 onClick={() => {
                   setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
                 }}
               disabled={currPage >= dotPositions.length - 1}
               variant="outline"
             >
-                Next
-              </Button>
-            ) : (
-              <Button
-                onClick={() => {
-                  setDotPositions([]);
-                }}
-                variant="outline"
-              >
-                Exit
-              </Button>
-            )}
+              Next
+            </Button>
           </HStack>
           <PDFLive page={currPage} dotPositions={dotPositions} />
           <HStack>
@@ -285,6 +274,13 @@ export default function Home() {
               <Icon as={FaPlay} />
               RESUME
             </Button>
+            <Button
+              onClick={() => {
+                setDotPositions([]);
+              }}
+            >
+              EXIT
+              </Button>
           </HStack>
         </VStack>
       )}

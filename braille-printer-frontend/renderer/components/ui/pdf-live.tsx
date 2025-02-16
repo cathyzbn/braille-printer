@@ -64,7 +64,8 @@ export const PDFLive: React.FC<PDFPreviewProps> = ({ page, dotPositions }) => {
       }
 
       ctx.beginPath();
-      ctx.arc(pxX, pxY, 3.5, 0, 3.5 * Math.PI);
+      const radius = 0.0393701 * displayWidth / 8.5;
+      ctx.arc(pxX, pxY, radius, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
     }
@@ -73,7 +74,7 @@ export const PDFLive: React.FC<PDFPreviewProps> = ({ page, dotPositions }) => {
       plotDot(dot, "black");
     }
     for (const dot of currentDotPositions) {
-      plotDot(dot, "green");
+      plotDot(dot, "red");
     }
   }, [page, dotPositions, currentDotPositions, canvasRef, boxRef]);
 
@@ -92,9 +93,8 @@ export const PDFLive: React.FC<PDFPreviewProps> = ({ page, dotPositions }) => {
   }, [page]);
 
   return (
-    <VStack outline="1px solid" outlineColor="gray.800" pt={2} borderRadius="md" width="100%" height="65vh" maxWidth="860px">
-      <Text>Page {page + 1}</Text>
-      <Box width="100%" height="100%" ref={boxRef} overflowY="scroll">
+    <VStack outlineColor="gray.800" borderRadius="md" width="100%" height="65vh" maxWidth="860px" overflow="hidden">
+      <Box width="100%" height="100%" ref={boxRef} overflowY="auto">
       <canvas
         ref={canvasRef}
       >
