@@ -5,8 +5,8 @@ import {
   HStack,
   Text,
   VStack,
-  Input,
   Button,
+  Textarea,
   Spinner,
   Icon,
 } from "@chakra-ui/react";
@@ -150,7 +150,7 @@ export default function Home() {
           <Text fontSize="xl">Enter text or upload a PDF</Text>
 
           {/* TEXT INPUT (disabled if a PDF is already chosen) */}
-          <Input
+          <Textarea
             placeholder="Enter text here"
             value={text}
             onChange={(e) => {
@@ -209,19 +209,42 @@ export default function Home() {
       )}
 
       {isConnected && dotPositions.length !== 0 && (
-        <VStack w="100%" p={3}>
-          {/* <PDFPreview page={currPage} dotPositions={dotPositions} /> */}
-          <PDFLive page={currPage} dotPositions={dotPositions} />
-          <HStack>
-            {currPage > 0 && (
+        <VStack w="50%" p={3}>
+          <HStack justifyContent="space-between" w="100%">
+            <Button
+              onClick={() => {
+                setCurrPage((p) => Math.max(0, p - 1));
+              }}
+              disabled={currPage <= 0}
+              variant="outline"
+            >
+              Previous
+            </Button>
+
+            <Text>Page {currPage + 1}</Text>
+            {currPage < dotPositions.length - 1 ? (
               <Button
                 onClick={() => {
-                  setCurrPage((p) => Math.max(0, p - 1));
+                  setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
                 }}
+              disabled={currPage >= dotPositions.length - 1}
+              variant="outline"
             >
-                PREVIOUS
+                Next
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  setDotPositions([]);
+                }}
+                variant="outline"
+              >
+                Exit
               </Button>
             )}
+          </HStack>
+          <PDFLive page={currPage} dotPositions={dotPositions} />
+          <HStack>
             <Button
               onClick={async () => {
                 await printCurrentPage();
@@ -248,7 +271,7 @@ export default function Home() {
                 });
               }}
             >
-              <Icon as={FaPause} />
+              <Icon as={FaPause}  />
               PAUSE
             </Button>
             <Button
@@ -262,24 +285,6 @@ export default function Home() {
               <Icon as={FaPlay} />
               RESUME
             </Button>
-            {currPage < dotPositions.length - 1 ? (
-              <Button
-                onClick={() => {
-                  setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
-                }}
-              disabled={currPage >= dotPositions.length - 1}
-            >
-                NEXT
-              </Button>
-            ) : (
-              <Button
-                onClick={() => {
-                  setDotPositions([]);
-                }}
-              >
-                EXIT
-              </Button>
-            )}
           </HStack>
         </VStack>
       )}
