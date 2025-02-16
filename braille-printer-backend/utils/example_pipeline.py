@@ -1,11 +1,23 @@
-from text_to_braille import text_to_braille
-from braille_to_gcode import braille_str_to_gcode, CharPointer
-from printer import print_gcode
+from utils.text_to_braille import text_to_braille
+from utils.braille_to_gcode import get_dots_pos_and_page, dot_pos_to_gcode
+from utils.printer import print_gcode
 
 if __name__ == "__main__":
-    char_pointer = CharPointer()
-    hello_braille = text_to_braille("abc!.,", grade=1)
-    print(hello_braille)
-    actions = braille_str_to_gcode(hello_braille, char_pointer)
-    print("\n".join(str(action) for action in actions))
-    print_gcode(actions)
+    # Convert text to braille
+    hello_braille = text_to_braille("abc!.,")
+    print("Braille string:", hello_braille)
+    
+    # Get dot positions for each page
+    dot_positions = get_dots_pos_and_page(hello_braille)
+    
+    # # Generate PDF preview
+    # dot_pos_to_pdf([dot for page in dot_positions for dot in page], "example.pdf")
+    # print("Generated PDF preview as example.pdf")
+    
+    # Generate and print GCODE
+    for page_num, page in enumerate(dot_positions):
+        print(f"\nGenerating GCODE for page {page_num + 1}:")
+        actions = dot_pos_to_gcode(page)
+        for action in actions:
+            print(str(action))
+        print_gcode(actions)
