@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Heading,
   HStack,
@@ -87,6 +87,10 @@ export default function Home() {
   //     });
   //   }
   // };
+
+  useEffect(() => {
+    window.electronAPI?.setTitle("Braille Printer");
+  }, []);
 
   return (
     <VStack alignContent="center" p={3}>
