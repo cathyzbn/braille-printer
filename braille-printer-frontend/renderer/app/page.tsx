@@ -8,7 +8,9 @@ import {
   Input,
   Button,
   Spinner,
+  Icon,
 } from "@chakra-ui/react";
+
 import { toaster, Toaster } from "../components/ui/toaster";
 import { PDFPreview, DotPositions } from "../components/ui/pdf-preview";
 import dynamic from "next/dynamic";
@@ -19,6 +21,19 @@ import {
   FileUploadRoot,
   FileUploadTrigger,
 } from "../components/ui/file-upload";
+
+const FaStop = dynamic(
+  () => import("react-icons/fa").then((mod) => mod.FaStop),
+  { ssr: false }
+);
+const FaPlay = dynamic(
+  () => import("react-icons/fa").then((mod) => mod.FaPlay),
+  { ssr: false }
+);
+const FaPause = dynamic(
+  () => import("react-icons/fa").then((mod) => mod.FaPause),
+  { ssr: false }
+);
 
 const DotLottieReact = dynamic(
   () =>
@@ -33,7 +48,7 @@ export default function Home() {
   const [dotPositions, setDotPositions] = useState<DotPositions>([]);
   const [currPage, setCurrPage] = useState(0);
   const [isPrinting, setIsPrinting] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
 
   const submitText = async () => {
     if (!text.trim()) return;
@@ -117,7 +132,13 @@ export default function Home() {
   return (
     <VStack alignContent="center" p={3}>
       <Toaster />
-      <VStack borderBottom="1px solid" borderColor="gray.300" w="100%" p={5} gapY={5}>
+      <VStack
+        borderBottom="1px solid"
+        borderColor="gray.300"
+        w="100%"
+        p={5}
+        gapY={5}
+      >
         <HStack>
           <Heading fontSize="6xl">Braille Printer</Heading>
         </HStack>
@@ -128,12 +149,14 @@ export default function Home() {
 
       <Connector isConnected={isConnected} setIsConnected={setIsConnected} />
 
-      <DotLottieReact
-        src="./printer.lottie"
-        loop
-        autoplay
-        style={{ width: "400px", height: "200px" }}
-      />
+      {dotPositions.length === 0 && (
+        <DotLottieReact
+          src="./printer.lottie"
+          loop
+          autoplay
+          style={{ width: "400px", height: "200px" }}
+        />
+      )}
 
       {isConnected && dotPositions.length === 0 && (
         <VStack w="80%" p={3}>
@@ -219,6 +242,7 @@ export default function Home() {
                 });
               }}
             >
+              <Icon as={FaStop} />
               STOP
             </Button>
             <Button
@@ -228,6 +252,7 @@ export default function Home() {
                 });
               }}
             >
+              <Icon as={FaPause} />
               PAUSE
             </Button>
             <Button
@@ -238,6 +263,7 @@ export default function Home() {
                 });
               }}
             >
+              <Icon as={FaPlay} />
               RESUME
             </Button>
           </HStack>
