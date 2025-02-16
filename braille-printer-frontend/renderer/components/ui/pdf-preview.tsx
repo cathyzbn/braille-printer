@@ -52,8 +52,7 @@ export const PDFPreview: React.FC<PDFPreviewProps> = ({ page, dotPositions }) =>
   }
 
   return (
-    <VStack outline="1px solid" outlineColor="gray.800" p={4} borderRadius="md">
-      <Text>Page {page + 1}</Text>
+    <VStack outline="1px solid" outlineColor="gray.800" p={4} borderRadius="md" width="100%">
       {pdfFile && (
         <object
           data={URL.createObjectURL(pdfFile)}

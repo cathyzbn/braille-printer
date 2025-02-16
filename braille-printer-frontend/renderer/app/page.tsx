@@ -208,18 +208,31 @@ export default function Home() {
       )}
 
       {isConnected && dotPositions.length !== 0 && (
-        <VStack w="100%" p={3}>
+        <VStack w="50%" p={3}>
+          <HStack justifyContent="space-between" w="100%">
+            <Button
+              onClick={() => {
+                setCurrPage((p) => Math.max(0, p - 1));
+              }}
+              disabled={currPage <= 0}
+              variant="outline"
+            >
+              Previous
+            </Button>
+
+            <Text>Page {currPage + 1}</Text>
+            <Button
+              onClick={() => {
+                setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
+              }}
+              disabled={currPage >= dotPositions.length - 1}
+              variant="outline"
+            >
+              Next
+            </Button>
+          </HStack>
           <PDFPreview page={currPage} dotPositions={dotPositions} />
           <HStack>
-            {currPage > 0 && (
-              <Button
-                onClick={() => {
-                  setCurrPage((p) => Math.max(0, p - 1));
-                }}
-            >
-                PREVIOUS
-              </Button>
-            )}
             <Button
               onClick={async () => {
                 await printCurrentPage();
@@ -261,16 +274,6 @@ export default function Home() {
               <Icon as={FaPlay} />
               RESUME
             </Button>
-            {currPage < dotPositions.length - 1 && (
-              <Button
-                onClick={() => {
-                  setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
-                }}
-              disabled={currPage >= dotPositions.length - 1}
-            >
-                NEXT
-              </Button>
-            )}
           </HStack>
         </VStack>
       )}
