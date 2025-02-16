@@ -2,13 +2,9 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import anthropic
-import os
-import base64
-from pdf2image import convert_from_bytes
-from io import BytesIO
+from pdf_extraction import extract_text_from_pdf
 import sys
 sys.path.insert(0, "./utils")
-
 from process_text import text_to_braille
 
 load_dotenv()
@@ -17,44 +13,24 @@ client = anthropic.Anthropic()
 app = Flask(__name__)
 CORS(app)
 
+"""
+0. call: str_to_braille() -> braille
+1. call func: get_dots_pos_and_page(braille) -> List[DotPositions]
+    dot_pos[page][list of points]
+2. call func: dot_pos_to_pdf(dot_pos[page]) -> pdf
+3. call: print_dots(dot_pos[page]) -> backend prints
+"""
+
+
 @app.route('/', methods=['POST'])
 def handle_input():
     if request.content_type.startswith("multipart/form-data"):
         if 'file' in request.files:
             pdf_file = request.files['file']
             pdf_bytes = pdf_file.read()
-            images = convert_from_bytes(pdf_bytes)
-            full_transcription = ""
-            for page in images:
-                buffered = BytesIO()
-                page.save(buffered, format="PNG")
-                image_data = base64.standard_b64encode(buffered.getvalue()).decode("utf-8")
-                message_payload = [
-                    {
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": "image/png",
-                            "data": image_data,
-                        },
-                    },
-                    {
-                        "type": "text",
-                        "text": "transcribe this image to a pdf verbatim. include [image descriptions]. don't write code for this. Don't include any other commentary, just the text transcription, starting now:"
-                    }
-                ]
-                response = client.messages.create(
-                    model="claude-3-5-sonnet-20241022",
-                    max_tokens=2048,
-                    messages=[{"role": "user", "content": message_payload}]
-                )
-                transcription = response.content[0].text
-                # remove unnec spaces (i.e. "hi  jeff" -> "hi jeff")
-                # transcription = " ".join(transcription.split())
-                if isinstance(transcription, list):
-                    transcription = "".join(str(item) for item in transcription)
-                full_transcription += transcription + "\n\n"
-            return jsonify({"text": full_transcription.strip()}), 200
+            transcript = extract_text_from_pdf(pdf_bytes)
+            print(transcript)
+            return jsonify({"text": transcript.strip()}), 200
         return jsonify({"error": "No file provided"}), 400
 
     elif request.is_json:
