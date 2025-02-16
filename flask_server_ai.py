@@ -2,13 +2,12 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
 import anthropic
-import os
 import base64
 from pdf2image import convert_from_bytes
 from io import BytesIO
 
 from utils.process_text import text_to_braille
-from utils.braille_to_gcode import dot_pos_to_pdf, get_dots_pos_and_page, dot_pos_to_gcode, CharPointer
+from utils.braille_to_gcode import dot_pos_to_pdf, get_dots_pos_and_page, dot_pos_to_gcode
 from utils.printer import print_gcode
 
 load_dotenv()
@@ -67,7 +66,7 @@ def handle_dot_pos_to_pdf(dot_positions):
 
 @app.route('/print_dots', methods=['POST'])
 def handle_print_dots(dot_positions):
-    actions = dot_pos_to_gcode(dot_positions, CharPointer())
+    actions = dot_pos_to_gcode(dot_positions)
     print_gcode(actions)
     return jsonify({"success—printing...": True}), 200
 
