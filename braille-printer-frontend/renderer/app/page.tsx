@@ -37,38 +37,24 @@ export default function Home() {
 
   const submitText = async () => {
     if (!text.trim()) return;
+    const formData = new FormData();
+    formData.append("type", "text");
+    formData.append("text", text);
     setIsProcessingPdf(true);
-    try {
-      const formData = new FormData();
-      formData.append("type", "text");
-      formData.append("text", text);
-      const response = await fetch("http://localhost:6969", {
-        method: "POST",
-        body: formData,
+    const response = await fetchApi("/", {
+      method: "POST",
+      body: formData,
+    });
+    if (response) {
+      toaster.success({
+        title: "Success",
+        description: "Text transcribed successfully!",
       });
-
-      if (response.ok) {
-        toaster.success({
-          title: "Success",
-          description: "Text transcribed successfully!",
-        });
-        const braillePositions: DotPositions = await response.json();
-        setDotPositions(braillePositions);
-        setCurrPage(0);
-      } else {
-        toaster.error({
-          title: "Error",
-          description: "Failed to transcribe text.",
-        });
-      }
-    } catch {
-      toaster.error({
-        title: "Error",
-        description: "An unexpected error occurred while sending text.",
-      });
-    } finally {
-      setIsProcessingPdf(false);
+      const braillePositions: DotPositions = await response.json();
+      setDotPositions(braillePositions);
+      setCurrPage(0);
     }
+    setIsProcessingPdf(false);
   };
 
   const submitPdf = async () => {
@@ -214,7 +200,7 @@ export default function Home() {
             <Button
               color="red.400"
               onClick={() => {
-                fetch("http://localhost:6969/stop_print", {
+                fetchApi("/stop_print", {
                   method: "POST",
                 });
               }}
@@ -223,7 +209,7 @@ export default function Home() {
             </Button>
             <Button
               onClick={() => {
-                fetch("http://localhost:6969/pause_print", {
+                fetchApi("/pause_print", {
                   method: "POST",
                 });
               }}
@@ -233,7 +219,7 @@ export default function Home() {
             <Button
               color="green"
               onClick={() => {
-                fetch("http://localhost:6969/resume_print", {
+                fetchApi("/resume_print", {
                   method: "POST",
                 });
               }}
