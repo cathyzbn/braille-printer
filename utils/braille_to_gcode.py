@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
 import fpdf
 
 from process_text import text_to_braille
@@ -30,10 +30,14 @@ SPEED_PUNCH = 800
 
 DEBUG = False
 
-# TODO(cathy) spacing options
-# TODO(cathy / jason) support for math?
-
 @dataclass
+class DotPosition:
+    x: float
+    y: float
+    punch: bool
+    page: int = 0
+
+@dataclass 
 class DotRelativeLocation:
     x: int
     y: int
@@ -64,7 +68,6 @@ class BrailleChar:
         locations.append(DotRelativeLocation(DIST_DIAM_DOT+DIST_BETWEEN_DOTS, DIST_DIAM_DOT*2+DIST_BETWEEN_DOTS*2, self.sixth))
         return locations
 
-
 class GcodeAction:
     def __init__(self, command: str) -> None:
         self.command = command
@@ -72,98 +75,84 @@ class GcodeAction:
     def __str__(self) -> str:
         return self.command
 
-
-class CharPointer:
-    def __init__(self) -> None:
-        self.x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
-        self.y = TOP_MARGIN_HEIGHT * MM_PER_UNIT
-    
-    def next_char(self) -> None:
-        self.x += (CHAR_WIDTH + COLUMN_WIDTH) * MM_PER_UNIT
-        if self.x + CHAR_WIDTH * MM_PER_UNIT > PAPER_WIDTH * MM_PER_UNIT - RIGHT_MARGIN_WIDTH * MM_PER_UNIT:
-            self.x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
-            self.y += (CHAR_HEIGHT + ROW_HEIGHT) * MM_PER_UNIT
-        if self.y > PAPER_HEIGHT * MM_PER_UNIT - BOTTOM_MARGIN_HEIGHT * MM_PER_UNIT:
-            raise Exception("Out of paper")
-
-
-def braille_str_to_gcode(braille_str, char_pointer: CharPointer) -> List[GcodeAction]:
-    actions = []
-    for char in braille_str:
-        if char == '\n':
-            char_pointer.next_char()
-            continue
-        char = BrailleChar(char)
-        locations = char.get_dot_rel_loc()
-        for location in locations:
-            if location.punch:
-                actions.append(GcodeAction("G1 X{} Y{} F{}".format(
-                    # Flip on print!
-                    PAPER_WIDTH * MM_PER_UNIT - (char_pointer.x + location.x * MM_PER_UNIT), 
-                    char_pointer.y + location.y * MM_PER_UNIT, 
-                    SPEED_LATERAL
-                )))
-                actions.append(GcodeAction("G1 E{} F{}".format(PUNCH_AMOUNT, SPEED_PUNCH)))
-        if DEBUG:
-            actions.append(GcodeAction("Next Char"))
-        char_pointer.next_char()
-    return actions
-
-def braille_to_pdf(braille_str: str, output_file: str) -> None:
-    """
-    Convert text to braille and create a PDF visualization
-    Args:
-        text: Input text to convert to braille
-        output_file: Path to save the PDF file
-    """
-    
-    # Create PDF
-    pdf = fpdf.FPDF('P', 'mm', 'Letter')
-    pdf.add_page()
-    
-    # Set initial position
+def get_dots_pos_and_page(braille_str: str) -> List[List[DotPosition]]:
+    """Get dot positions for each page"""
+    pages = [[]]
     x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
     y = TOP_MARGIN_HEIGHT * MM_PER_UNIT
-
-    def new_line(x, y):
+    current_page = 0
+    
+    def new_line(x: float, y: float) -> Tuple[float, float]:
         x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
         y += (CHAR_HEIGHT + ROW_HEIGHT) * MM_PER_UNIT
         return x, y
-    
-    # Draw each braille character
+
     for char in braille_str:
         if char == '\n':
             x, y = new_line(x, y)
             continue
+            
         char = BrailleChar(char)
         locations = char.get_dot_rel_loc()
+        
         for loc in locations:
-            # Convert relative locations to absolute positions
             abs_x = x + loc.x * MM_PER_UNIT
             abs_y = y + loc.y * MM_PER_UNIT
-            # Draw dot as small circle
-            if loc.punch:
-                pdf.ellipse(abs_x, abs_y, 
-                          DIST_DIAM_DOT * MM_PER_UNIT, DIST_DIAM_DOT * MM_PER_UNIT, 'F')
-            else:
-                pdf.ellipse(abs_x, abs_y,
-                          DIST_DIAM_DOT * MM_PER_UNIT, DIST_DIAM_DOT * MM_PER_UNIT, 'D')
-        # Move to next character position
+            pages[current_page].append(DotPosition(abs_x, abs_y, loc.punch, current_page))
+            
         x += (CHAR_WIDTH + COLUMN_WIDTH) * MM_PER_UNIT
         if x + CHAR_WIDTH * MM_PER_UNIT > (PAPER_WIDTH - RIGHT_MARGIN_WIDTH) * MM_PER_UNIT:
             x, y = new_line(x, y)
             if y - CHAR_HEIGHT * MM_PER_UNIT > (PAPER_HEIGHT - BOTTOM_MARGIN_HEIGHT) * MM_PER_UNIT:
-                pdf.add_page()
+                current_page += 1
+                pages.append([])
                 x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
                 y = TOP_MARGIN_HEIGHT * MM_PER_UNIT
+                
+    return pages
+
+def dot_pos_to_pdf(dot_positions: List[DotPosition], output_file: str) -> None:
+    """Convert dot positions to PDF"""
+    pdf = fpdf.FPDF('P', 'mm', 'Letter')
     
-    # Save PDF
+    current_page = -1
+    for dot in dot_positions:
+        if dot.page > current_page:
+            pdf.add_page()
+            current_page = dot.page
+            
+        if dot.punch:
+            pdf.ellipse(dot.x, dot.y,
+                       DIST_DIAM_DOT * MM_PER_UNIT, 
+                       DIST_DIAM_DOT * MM_PER_UNIT, 'F')
+        else:
+            pdf.ellipse(dot.x, dot.y,
+                       DIST_DIAM_DOT * MM_PER_UNIT,
+                       DIST_DIAM_DOT * MM_PER_UNIT, 'D')
+    
     pdf.output(output_file)
 
+def dot_pos_to_gcode(dot_positions: List[DotPosition]) -> List[GcodeAction]:
+    """Convert dot positions to GCODE commands"""
+    actions = []
+    for dot in dot_positions:
+        if dot.punch:
+            actions.append(GcodeAction("G1 X{} Y{} F{}".format(
+                PAPER_WIDTH * MM_PER_UNIT - dot.x,
+                dot.y,
+                SPEED_LATERAL
+            )))
+            actions.append(GcodeAction("G1 E{} F{}".format(PUNCH_AMOUNT, SPEED_PUNCH)))
+    return actions
 
 if __name__ == "__main__":
-    char_pointer = CharPointer()
-    hello_braille = text_to_braille("Wishing you a day filled with inspiration, creativity, and success!\nWhatever you’re working on, know that your ideas have the power to make a difference. Keep pushing forward, stay curious, and never stop innovating.")
-    # braille_to_pdf(hello_braille, "hello.pdf")
-    for x in braille_str_to_gcode(hello_braille, char_pointer):
-        print(str(x))
+    hello_braille = text_to_braille("Wishing you a day filled with inspiration, creativity, and success!\nWhatever you're working on, know that your ideas have the power to make a difference. Keep pushing forward, stay curious, and never stop innovating.")
+    dot_positions = get_dots_pos_and_page(hello_braille)
+    
+    # Generate PDF
+    dot_pos_to_pdf([dot for page in dot_positions for dot in page], "hello.pdf")
+    
+    # Generate GCODE
+    for page in dot_positions:
+        for action in dot_pos_to_gcode(page):
+            print(str(action))
