@@ -2,7 +2,7 @@
 // pdf-live.tsx
 // ------------------------------------
 import React, { useEffect, useRef, useState } from "react";
-import { VStack, Text, Box } from "@chakra-ui/react";
+import { VStack, Box } from "@chakra-ui/react";
 import { DotPosition, PDFPreviewProps } from "./pdf-preview";
 import { fetchApi } from "../../utils/api";
 

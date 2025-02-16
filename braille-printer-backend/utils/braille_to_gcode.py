@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Tuple, Callable
+from typing import List, Tuple
 import fpdf
 
 from utils.text_to_braille import text_to_braille
@@ -171,7 +171,7 @@ def dot_pos_to_gcode(dot_positions: List[DotPosition]) -> List[GcodeAction]:
     for dot in dot_positions:
         if dot.punch:
             actions.append(GcodeAction("G1 X{} Y{} F{}".format(
-                PAPER_WIDTH * MM_PER_UNIT - dot.x,
+                dot.x,
                 dot.y,
                 SPEED_LATERAL
             )))
