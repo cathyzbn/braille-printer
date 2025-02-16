@@ -52,10 +52,11 @@ const createWindow = () => {
         win.maximize();
         win.show();
     });
+    win.on("close", () => {
+        electron_1.app.quit();
+    });
 };
-const backendPath = electron_1.app.isPackaged
-    ? path_1.default.join(process.resourcesPath, "braille-printer-backend/dist/flask_server_ai/flask_server_ai")
-    : path_1.default.join(__dirname, "../../../braille-printer-backend/flask_server_ai.py");
+const backendPath = path_1.default.join(process.resourcesPath, "braille-printer-backend/dist/app/app");
 const backendDir = electron_1.app.isPackaged
     ? path_1.default.dirname(backendPath)
     : path_1.default.join(__dirname, "../../../braille-printer-backend");

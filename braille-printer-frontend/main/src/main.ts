@@ -59,9 +59,7 @@ const createWindow = () => {
   });
 };
 
-const backendPath = app.isPackaged
-  ? path.join(process.resourcesPath, "braille-printer-backend/dist/flask_server_ai/flask_server_ai")
-  : path.join(__dirname, "../../../braille-printer-backend/flask_server_ai.py");
+const backendPath = path.join(process.resourcesPath, "braille-printer-backend/dist/app/app");
 
 const backendDir = app.isPackaged
   ? path.dirname(backendPath)
@@ -75,8 +73,8 @@ const env = {
 
 app.whenReady().then(() => {
   const subpy = app.isPackaged
-  ? child_process.spawn(backendPath, { env })
-  : child_process.spawn('pipenv', ['run', 'python', 'flask_server_ai.py'], { cwd: backendDir, env });
+    ? child_process.spawn(backendPath, { env })
+    : child_process.spawn('pipenv', ['run', 'python', 'flask_server_ai.py'], { cwd: backendDir, env });
 
   // handle stdout and stderr
   subpy.stdout.on("data", (data) => {
@@ -100,8 +98,12 @@ app.whenReady().then(() => {
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+
+  app.on("before-quit", () => {
+    subpy.kill();
+  });
 });
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+  app.quit();
 });

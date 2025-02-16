@@ -63,10 +63,14 @@ class PrinterConnection:
             self.send_command("G1 E2.2 F200")
             self.send_command("G1 E-2.2 F200")
         self.send_command("G1 E1.5 F200")
-        # self.send_command("G1 Z10 F800") # MAKE SURE TO UNCOMMENT THIS FOR AIR TESTS
-        # Make z axis go up
+        self.send_command("G1 Z3 F800")
         # self.send_command("G1 Z10 F800")
         input("Press Enter to continue...")
+
+    def cleanup(self):
+        self.send_command("G1 Z10 F800") # Move z axis up
+        self.send_command("G28 X0 Y0")   # Zero X and Y
+        self.send_command("G1 Z50 F800") # Move z axis up so can easily remove page
 
     def wait_for_start(self, timeout=10):
         """Wait for the printer to send 'start' after connecting."""
@@ -161,8 +165,12 @@ def print_gcode(gcode_actions: List[GcodeAction]):
         printer.initialize()
         for action in gcode_actions:
             printer.send_command(action.command)
+        printer.cleanup()
     except serial.SerialException as e:
         print(f"Serial error: {e}")
+    except KeyboardInterrupt:
+        print("Cleaning up...")
+        printer.cleanup()
     except Exception as e:
         print(f"Error: {e}")
     finally:

@@ -1,4 +1,4 @@
-import pybrl as brl
+# import pybrl as brl
 
 def text_to_braille_grade1(text) -> str:
     """
@@ -20,25 +20,26 @@ def text_to_braille_grade1(text) -> str:
     return ''.join(braille_map.get(char, char) for char in text.upper())
 
 
-def text_to_braille_grade2(text) -> str:
-    """
-    Converts text to braille representation using Unicode braille patterns.
-    Each character is mapped to its corresponding braille pattern.
+# def text_to_braille_grade2(text) -> str:
+#     """
+#     Converts text to braille representation using Unicode braille patterns.
+#     Each character is mapped to its corresponding braille pattern.
     
-    Args:
-        text (str): Input text to convert to braille
+#     Args:
+#         text (str): Input text to convert to braille
         
-    Returns:
-        str: Braille representation of the input text
-    """
-    return brl.toUnicodeSymbols(brl.translate(text), flatten=True)
+#     Returns:
+#         str: Braille representation of the input text
+#     """
+#     return brl.toUnicodeSymbols(brl.translate(text), flatten=True)
 
 
 def text_to_braille(text, grade=2) -> str:
     if grade == 1:
         return text_to_braille_grade1(text)
     elif grade == 2:
-        return text_to_braille_grade2(text)
+        print("WARNING: Grade 2 braille conversion is currently disabled")
+        return text_to_braille_grade1(text)
     else:
         raise ValueError(f"Invalid grade for braille conversion: {grade}")
 
