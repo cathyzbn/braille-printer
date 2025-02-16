@@ -15,6 +15,7 @@ pybrl = {git = "git+https://github.com/ant0nisk/pybrl.git"}
 pdf2image = "*"
 pymupdf = "*"
 groq = "*"
+pyinstaller = "*"
 
 [dev-packages]
 

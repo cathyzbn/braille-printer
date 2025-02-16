@@ -3,6 +3,7 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
 import serve from "electron-serve";
+import child_process from "child_process";
 
 import dotenv from "dotenv";
 
@@ -58,7 +59,41 @@ const createWindow = () => {
   });
 };
 
+const backendPath = app.isPackaged
+  ? path.join(process.resourcesPath, "braille-printer-backend/dist/flask_server_ai/flask_server_ai")
+  : path.join(__dirname, "../../../braille-printer-backend/flask_server_ai.py");
+
+const backendDir = app.isPackaged
+  ? path.dirname(backendPath)
+  : path.join(__dirname, "../../../braille-printer-backend");
+
+const env = {
+  ...process.env,
+  ANTHROPIC_API_KEY: "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",
+  GROQ_API_KEY: "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"
+}
+
 app.whenReady().then(() => {
+  const subpy = app.isPackaged
+  ? child_process.spawn(backendPath, { env })
+  : child_process.spawn('pipenv', ['run', 'python', 'flask_server_ai.py'], { cwd: backendDir, env });
+
+  // handle stdout and stderr
+  subpy.stdout.on("data", (data) => {
+    console.log("Python: ", data.toString());
+  });
+  subpy.stderr.on("data", (data) => {
+    console.error("Python: ", data.toString());
+  });
+
+  subpy.on("close", (code) => {
+    console.log(`Python process exited with code ${code}`);
+  });
+
+  subpy.on("error", (error) => {
+    console.error("Python error: ", error);
+  });
+
   ipcMain.on("set-title", handleSetTitle);
   createWindow();
 
