@@ -12,11 +12,11 @@ import {
 import { toaster, Toaster } from "../components/ui/toaster";
 import { PDFPreview, DotPositions } from "../components/ui/pdf-preview";
 import dynamic from "next/dynamic";
-// import {
-//   FileUploadList,
-//   FileUploadRoot,
-//   FileUploadTrigger,
-// } from "../components/ui/file-upload";
+import {
+  FileUploadList,
+  FileUploadRoot,
+  FileUploadTrigger,
+} from "../components/ui/file-upload";
 
 const DotLottieReact = dynamic(
   () =>
@@ -28,13 +28,12 @@ export default function Home() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [isProcessingPdf, setIsProcessingPdf] = useState(false);
   const [text, setText] = useState("");
-  const [shouldAttachFile, setShouldAttachFile] = useState(false);
-
   const [dotPositions, setDotPositions] = useState<DotPositions>([]);
   const [currPage, setCurrPage] = useState(0);
   const [isPrinting, setIsPrinting] = useState(false);
 
   const submitText = async () => {
+    if (!text.trim()) return;
     setIsProcessingPdf(true);
     try {
       const formData = new FormData();
@@ -156,35 +155,59 @@ export default function Home() {
       />
 
       {dotPositions.length === 0 && (
-        <VStack w="100%" p={3}>
-          <Text fontSize="xl">Enter text to get started</Text>
+        <VStack w="80%" p={3}>
+          <Text fontSize="xl">Enter text or upload a PDF</Text>
+
+          {/* TEXT INPUT (disabled if a PDF is already chosen) */}
           <Input
             placeholder="Enter text here"
-            onChange={(e) => setText(e.target.value)}
-          />
-          <HStack>
-            <Button
-              onClick={() => {
-                submitPdf();
-              }}
-              disabled={isProcessingPdf}
-              variant="outline"
-            >
-              Attach File
-            </Button>
-            <Button onClick={submitText} disabled={isProcessingPdf}>
-              Submit Text
-            </Button>
-          </HStack>
-          <Input
-            type="file"
-            accept=".pdf"
+            value={text}
             onChange={(e) => {
-              if (e.target.files) {
-                setPdfFile(e.target.files[0]);
+              setText(e.target.value);
+              if (e.target.value) {
+                // if user starts typing, remove any selected PDF
+                setPdfFile(null);
               }
             }}
+            disabled={!!pdfFile}
           />
+
+          {/* SUBMIT BUTTONS */}
+          <HStack w="100%" alignItems="start" justifyContent="flex-end">
+            <FileUploadRoot
+              accept=".pdf"
+              onChange={(event) => {
+                const files = (event.target as HTMLInputElement).files;
+                if (files && files.length > 0) {
+                  setPdfFile(files[0]);
+                  setText(""); // if user chooses a PDF, clear any typed text
+                }
+              }}
+            >
+              <FileUploadTrigger asChild>
+                <Button
+                  variant="outline"
+                  disabled={isProcessingPdf || !!text}
+                  // leftIcon={<HiUpload />}
+                >
+                  Attach File
+                </Button>
+              </FileUploadTrigger>
+              <FileUploadList />
+            </FileUploadRoot>
+            <Button
+              onClick={() => {
+                if (text.trim()) {
+                  submitText();
+                } else {
+                  submitPdf();
+                }
+              }}
+            >
+              Submit
+            </Button>
+          </HStack>
+
           {isProcessingPdf && (
             <HStack mt={2}>
               <Spinner size="sm" />
