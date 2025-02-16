@@ -90,22 +90,22 @@ def handle_print_dots():
 
     # convert from 
     actions = dot_pos_to_gcode(dot_positions)
-    print_gcode(actions)
-    return jsonify({"success—printing...": True}), 200
+    print_gcode(actions, printer)
+    return jsonify({"success": True}), 200
 
 @app.route('/stop_print', methods=['POST'])
 def handle_stop_print():
-    stop_print()
+    stop_print(printer)
     return jsonify({"success": True}), 200
 
 @app.route('/pause_print', methods=['POST'])
 def handle_pause_print():
-    pause_print()
+    pause_print(printer)
     return jsonify({"success": True}), 200
 
 @app.route('/resume_print', methods=['POST'])
 def handle_resume_print():
-    resume_print()
+    resume_print(printer)
     return jsonify({"success": True}), 200
 
 
@@ -113,7 +113,7 @@ def cleanup():
     global printer
     if printer is not None:
         try:
-            printer.disconnect()
+            printer.close()
         except Exception as e:
             print(f"Error disconnecting printer: {e}")
 
