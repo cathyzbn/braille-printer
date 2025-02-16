@@ -37,8 +37,8 @@ export default function Home() {
       });
 
       if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
+        // const blob = await response.blob();
+        // const url = URL.createObjectURL(blob);
         toaster.success({
           title: "Success",
           description: "PDF file transcribed successfully!",
@@ -112,7 +112,7 @@ export default function Home() {
         style={{ width: "400px", height: "200px" }}
       />
       {/* don't render below if we've received dot_positions */}
-      {!dotPositions && (
+      {Object.keys(dotPositions).length === 0 && (
         <VStack w="100%" p={3}>
           <Text fontSize="xl">Upload a PDF file to get started</Text>
           <Input
