@@ -10,7 +10,7 @@ from utils.braille_to_gcode import DotPosition, GcodeAction, dot_pos_to_gcode
 port = "/dev/tty.usbserial-0001"
 baud_rate = 250000  # Adjust this to match your printer's baud rate
 
-DEBUG = True
+DEBUG = False
 
 class PrintStatus(Enum):
     IDLE = "idle"
@@ -83,9 +83,10 @@ class PrinterConnection:
         # input("Press Enter to continue...")
 
     def cleanup(self):
-        self.send_command("G1 Z10 F800") # Move z axis up
-        self.send_command("G28 X0 Y0")   # Zero X and Y
-        self.send_command("G1 Z50 F800") # Move z axis up so can easily remove page
+        if self.ser and self.ser.is_open:
+            self.send_command("G1 Z10 F800") # Move z axis up
+            self.send_command("G28 X0 Y0")   # Zero X and Y
+            self.send_command("G1 Z50 F800") # Move z axis up so can easily remove page
 
     def wait_for_start(self, timeout=10):
         """Wait for the printer to send 'start' after connecting."""
@@ -100,6 +101,9 @@ class PrinterConnection:
 
     def send_command(self, command, wait_for_ok=True):
         """Send a G-code command with line number and checksum."""
+        if not self.ser or not self.ser.is_open:
+            raise serial.PortNotOpenError()
+            
         while True:  # Keep trying until command is accepted
             if command.startswith('N'):
                 formatted_command = command
@@ -180,7 +184,10 @@ class PrinterConnection:
             self.print_thread.join()
         self._stop_event.clear()
         self.status = PrintStatus.IDLE
-        self.cleanup()
+        try:
+            self.cleanup()
+        except serial.PortNotOpenError:
+            pass  # Ignore if port is already closed
 
     def pause(self):
         """Pause the current print job."""

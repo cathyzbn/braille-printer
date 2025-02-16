@@ -143,8 +143,6 @@ def dot_pos_to_pdf(dot_positions: List[DotPosition]) -> fpdf.FPDF:
                        DIST_DIAM_DOT * MM_PER_UNIT, 'D')
     return pdf
 
-    
-
 
 def dot_pos_to_gcode(dot_positions: List[DotPosition]) -> List[GcodeAction]:
     """Convert dot positions to GCODE commands"""
