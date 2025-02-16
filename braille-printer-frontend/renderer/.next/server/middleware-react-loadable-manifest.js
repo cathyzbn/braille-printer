@@ -1,1 +1,0 @@
-self.__REACT_LOADABLE_MANIFEST='{"app/page.tsx -> @lottiefiles/dotlottie-react":{"id":8234,"files":["static/chunks/b1422a44.c6618eb01e89cc10.js"]}}';

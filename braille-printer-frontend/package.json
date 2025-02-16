@@ -22,6 +22,7 @@
   "build": {
     "appId": "Braille-Printer",
     "productName": "Braille Printer",
+    "asar": false,
     "win": {
       "target": [
         "nsis"
