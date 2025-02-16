@@ -1,5 +1,5 @@
-from utils.text_to_braille import text_to_braille
-from utils.braille_to_gcode import get_dots_pos_and_page, dot_pos_to_gcode
+from utils.braille_to_gcode import get_dots_pos_and_page, dot_pos_to_gcode, dot_pos_to_pdf
+from utils.pdf_extraction import extract_text_from_pdf
 from utils.printer import print_gcode
 
 import sys
@@ -8,15 +8,18 @@ sys.path.append('utils')
 
 if __name__ == "__main__":
     # Convert text to braille
-    hello_braille = text_to_braille("Hello my name is Cathy")
-    print("Braille string:", hello_braille)
+    # text = text_to_braille("Hello my name is Cathy")
+    # print("Braille string:", text)
+
+    text = extract_text_from_pdf("test.pdf", input_type="path")
     
     # Get dot positions for each page
-    dot_positions = get_dots_pos_and_page(hello_braille)
+    dot_positions = get_dots_pos_and_page(text)
     
-    # # Generate PDF preview
-    # dot_pos_to_pdf([dot for page in dot_positions for dot in page], "example.pdf")
-    # print("Generated PDF preview as example.pdf")
+    # Generate PDF preview
+    pdf = dot_pos_to_pdf([dot for page in dot_positions for dot in page])
+    pdf.output("test_output.pdf")
+    print("Generated PDF preview as test_output.pdf")
     
     # Generate and print GCODE
     for page_num, page in enumerate(dot_positions):

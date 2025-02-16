@@ -14,19 +14,24 @@ CHAR_HEIGHT = 3 * DIST_DIAM_DOT + 2 * DIST_BETWEEN_DOTS
 CHAR_WIDTH = 2 * DIST_DIAM_DOT + DIST_BETWEEN_DOTS
 PUNCH_AMOUNT = 2
 
-COLUMN_WIDTH = 2
-ROW_HEIGHT = 2
+COLUMN_WIDTH = 3
+ROW_HEIGHT = 4
 
-PAPER_WIDTH = 210 / MM_PER_UNIT
-PAPER_HEIGHT = 297 / MM_PER_UNIT
+PAPER_WIDTH = 215.9 / MM_PER_UNIT
+PAPER_HEIGHT = 279.4 / MM_PER_UNIT
 
 LEFT_MARGIN_WIDTH = 10
 RIGHT_MARGIN_WIDTH = 10
-TOP_MARGIN_HEIGHT = 20
-BOTTOM_MARGIN_HEIGHT = 20
+TOP_MARGIN_HEIGHT = 10
+BOTTOM_MARGIN_HEIGHT = 10
 
 SPEED_LATERAL = 4000 # 4000
 SPEED_PUNCH = 800
+
+NUM_BRAILLE_PER_ROW = int((PAPER_WIDTH - LEFT_MARGIN_WIDTH - RIGHT_MARGIN_WIDTH - CHAR_WIDTH) / (CHAR_WIDTH + COLUMN_WIDTH)) + 1
+NUM_BRAILLE_PER_COL = int((PAPER_HEIGHT - TOP_MARGIN_HEIGHT - BOTTOM_MARGIN_HEIGHT - CHAR_HEIGHT) / (CHAR_HEIGHT + ROW_HEIGHT)) + 1
+ACTUAL_COL_WIDTH = (PAPER_WIDTH - LEFT_MARGIN_WIDTH - RIGHT_MARGIN_WIDTH - CHAR_WIDTH * NUM_BRAILLE_PER_ROW) / (NUM_BRAILLE_PER_ROW -1)
+ACTUAL_ROW_HEIGHT = (PAPER_HEIGHT - TOP_MARGIN_HEIGHT - BOTTOM_MARGIN_HEIGHT - CHAR_HEIGHT * NUM_BRAILLE_PER_COL) / (NUM_BRAILLE_PER_COL -1)
 
 DEBUG = False
 
@@ -90,7 +95,7 @@ def get_dots_pos_and_page(braille_str: str) -> List[List[DotPosition]]:
     
     def new_line(x: float, y: float) -> Tuple[float, float]:
         x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
-        y += (CHAR_HEIGHT + ROW_HEIGHT) * MM_PER_UNIT
+        y += (CHAR_HEIGHT + ACTUAL_ROW_HEIGHT) * MM_PER_UNIT
         return x, y
 
     for char in braille_str:
@@ -100,24 +105,25 @@ def get_dots_pos_and_page(braille_str: str) -> List[List[DotPosition]]:
             
         char = BrailleChar(char)
         locations = char.get_dot_rel_loc()
+
+        if x + CHAR_WIDTH * MM_PER_UNIT - DIST_DIAM_DOT > (PAPER_WIDTH - RIGHT_MARGIN_WIDTH) * MM_PER_UNIT:
+            x, y = new_line(x, y)
+        if y + CHAR_HEIGHT * MM_PER_UNIT - DIST_DIAM_DOT > (PAPER_HEIGHT - BOTTOM_MARGIN_HEIGHT) * MM_PER_UNIT:
+            current_page += 1
+            pages.append([])
+            x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
+            y = TOP_MARGIN_HEIGHT * MM_PER_UNIT
         
         for loc in locations:
             abs_x = x + loc.x * MM_PER_UNIT
             abs_y = y + loc.y * MM_PER_UNIT
             pages[current_page].append(DotPosition(abs_x, abs_y, loc.punch, current_page))
             
-        x += (CHAR_WIDTH + COLUMN_WIDTH) * MM_PER_UNIT
-        if x + CHAR_WIDTH * MM_PER_UNIT > (PAPER_WIDTH - RIGHT_MARGIN_WIDTH) * MM_PER_UNIT:
-            x, y = new_line(x, y)
-            if y - CHAR_HEIGHT * MM_PER_UNIT > (PAPER_HEIGHT - BOTTOM_MARGIN_HEIGHT) * MM_PER_UNIT:
-                current_page += 1
-                pages.append([])
-                x = LEFT_MARGIN_WIDTH * MM_PER_UNIT
-                y = TOP_MARGIN_HEIGHT * MM_PER_UNIT
-                
+        x += (CHAR_WIDTH + ACTUAL_COL_WIDTH) * MM_PER_UNIT
+                      
     return pages
 
-def dot_pos_to_pdf(dot_positions: List[DotPosition], output_file: str) -> None:
+def dot_pos_to_pdf(dot_positions: List[DotPosition]) -> fpdf.FPDF:
     """Convert dot positions to PDF"""
     pdf = fpdf.FPDF('P', 'mm', 'Letter')
     
@@ -135,8 +141,7 @@ def dot_pos_to_pdf(dot_positions: List[DotPosition], output_file: str) -> None:
             pdf.ellipse(dot.x, dot.y,
                        DIST_DIAM_DOT * MM_PER_UNIT,
                        DIST_DIAM_DOT * MM_PER_UNIT, 'D')
-    
-    pdf.output(output_file)
+    return pdf
 
     
 
@@ -160,7 +165,8 @@ if __name__ == "__main__":
     dot_positions = get_dots_pos_and_page(hello_braille)
     
     # Generate PDF
-    dot_pos_to_pdf([dot for page in dot_positions for dot in page], "hello.pdf")
+    pdf = dot_pos_to_pdf([dot for page in dot_positions for dot in page])
+    pdf.output("test_output.pdf")
     
     # Generate GCODE
     for page in dot_positions:

@@ -1,3 +1,4 @@
+from io import BytesIO
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -44,8 +45,14 @@ def handle_dot_pos_to_pdf():
     #
     # If it’s already a single list, skip flattening.
 
-    dot_pos_to_pdf(dot_positions, "braille.pdf")
-    return send_file("braille.pdf", mimetype="application/pdf")
+    pdf = dot_pos_to_pdf(dot_positions)
+    pdf_bytes = pdf.output(dest='S').encode('latin1')
+    return send_file(
+        BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name="braille.pdf"
+    )
 
 @app.route('/print_dots', methods=['POST'])
 def handle_print_dots():
