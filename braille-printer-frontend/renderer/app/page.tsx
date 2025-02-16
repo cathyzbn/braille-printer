@@ -138,9 +138,9 @@ export default function Home() {
   return (
     <VStack alignContent="center" p={3}>
       <Toaster />
-      <VStack borderBottom="1px solid" borderColor="gray.300" w="100%" p={3}>
+      <VStack borderBottom="1px solid" borderColor="gray.300" w="100%" p={5} gapY={5}>
         <HStack>
-          <Heading fontSize="5xl">Braille Printer</Heading>
+          <Heading fontSize="6xl">Braille Printer</Heading>
         </HStack>
         <HStack>
           <Text fontSize="2xl">Any PDF to printed braille</Text>
