@@ -15,6 +15,7 @@
     "renderer:lint": "cd renderer && next lint",
     "electron:dev": "cross-env NODE_ENV=development npm run build:main && wait-on tcp:3000 && electron .",
     "electron": "electron .",
+    "python:build": "cd ../braille-printer-backend && pipenv run pyinstaller --clean --onedir flask_server_ai.py",
     "pack": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
     "builder": "electron-builder --dir"
@@ -22,6 +23,16 @@
   "build": {
     "appId": "Braille-Printer",
     "productName": "Braille Printer",
+    "extraResources": [
+      {
+        "from": "/Users/scotthickmann/.local/share/virtualenvs/braille-printer-R1RVfxD3/bin/python",
+        "to": "python"
+      },
+      {
+        "from": "braille-printer-backend",
+        "to": "braille-printer-backend"
+      }
+    ],
     "asar": false,
     "win": {
       "target": [
