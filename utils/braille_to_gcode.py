@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List
 import fpdf
 
-from process_text import text_to_braille
+from utils.process_text import text_to_braille
 
 # Constants
 MM_PER_UNIT = 2
@@ -159,6 +159,8 @@ def braille_to_pdf(braille_str: str, output_file: str) -> None:
     
     # Save PDF
     pdf.output(output_file)
+
+    
 
 
 if __name__ == "__main__":
