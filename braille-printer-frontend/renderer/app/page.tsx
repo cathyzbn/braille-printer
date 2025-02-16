@@ -1,6 +1,3 @@
-// ------------------------------------
-// page.tsx
-// ------------------------------------
 "use client";
 import { useEffect, useState } from "react";
 import {
@@ -25,10 +22,10 @@ export default function Home() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [isProcessingPdf, setIsProcessingPdf] = useState(false);
 
-  // Holds an array of pages, where each page is an array of DotPosition
+  // Array of pages, each page is an array of DotPosition
   const [dotPositions, setDotPositions] = useState<DotPositions>([]);
-  // Active page
   const [currPage, setCurrPage] = useState(0);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   const submitPdf = async () => {
     if (!pdfFile) return;
@@ -48,9 +45,8 @@ export default function Home() {
           description: "PDF file transcribed successfully!",
         });
         const braillePositions: DotPositions = await response.json();
-        // braillePositions => array of pages => each page is array of DotPosition
         setDotPositions(braillePositions);
-        setCurrPage(0); // start at page 0
+        setCurrPage(0);
       } else {
         toaster.error({
           title: "Error",
@@ -67,6 +63,32 @@ export default function Home() {
     }
   };
 
+  async function printCurrentPage() {
+    if (!dotPositions[currPage]) return;
+    setIsPrinting(true);
+    try {
+      const response = await fetch("http://localhost:6969/print_dots", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dotPositions: dotPositions[currPage] }),
+      });
+      if (response.ok) {
+        toaster.success({
+          title: "Printing",
+          description: `Page ${currPage + 1} is printing...`,
+        });
+      } else {
+        toaster.error({ title: "Error", description: "Failed to print." });
+      }
+    } catch {
+      toaster.error({
+        title: "Error",
+        description: "Something went wrong while printing.",
+      });
+    } finally {
+      setIsPrinting(false);
+    }
+  }
 
   useEffect(() => {
     window.electronAPI?.setTitle("Braille Printer");
@@ -91,7 +113,6 @@ export default function Home() {
         style={{ width: "400px", height: "200px" }}
       />
 
-      {/* If we have no dot positions, show the upload */}
       {dotPositions.length === 0 && (
         <VStack w="100%" p={3}>
           <Text fontSize="xl">Upload a PDF file to get started</Text>
@@ -116,17 +137,16 @@ export default function Home() {
         </VStack>
       )}
 
-      {/* If we have dotPositions, show the PDF preview + controls */}
       {dotPositions.length !== 0 && (
         <VStack w="100%" p={3}>
           <PDFPreview page={currPage} dotPositions={dotPositions} />
           <HStack>
             <Button
-              onClick={() =>
-                setCurrPage(Math.min(dotPositions.length - 1, currPage + 1))
-
-              }
-              disabled={currPage >= dotPositions.length - 1}
+              onClick={async () => {
+                await printCurrentPage();
+                setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
+              }}
+              disabled={currPage >= dotPositions.length - 1 || isPrinting}
             >
               Print and proceed to next page
             </Button>

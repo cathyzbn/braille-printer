@@ -5,7 +5,7 @@ import anthropic
 
 from utils.pdf_extraction import extract_text_from_pdf
 from utils.text_to_braille import text_to_braille
-from utils.braille_to_gcode import dot_pos_to_pdf, get_dots_pos_and_page, dot_pos_to_gcode
+from utils.braille_to_gcode import DotPosition, dot_pos_to_pdf, get_dots_pos_and_page, dot_pos_to_gcode
 from utils.printer import print_gcode
 
 DEBUG = False
@@ -37,7 +37,8 @@ def handle_dot_pos_to_pdf():
     # data["dotPositions"] can be either a list of DotPositions or list of list-of-DotPositions
     # If you only sent the single page, it's a list of DotPositions
     dot_positions = data["dotPositions"]
-    
+    dot_positions = [DotPosition(**dot_dict) for dot_dict in dot_positions]
+
     # If your 'dot_positions' is a nested list, you might need to flatten it:
     # flatten_dot_positions = [dot for page in dot_positions for dot in page]
     #
@@ -47,7 +48,13 @@ def handle_dot_pos_to_pdf():
     return send_file("braille.pdf", mimetype="application/pdf")
 
 @app.route('/print_dots', methods=['POST'])
-def handle_print_dots(dot_positions):
+def handle_print_dots():
+    data = request.get_json()
+
+    dot_positions = data["dotPositions"]
+    dot_positions = [DotPosition(**dot_dict) for dot_dict in dot_positions]
+
+    # convert from 
     actions = dot_pos_to_gcode(dot_positions)
     print_gcode(actions)
     return jsonify({"success—printing...": True}), 200
