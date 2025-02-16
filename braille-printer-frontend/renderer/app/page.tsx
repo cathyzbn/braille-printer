@@ -211,14 +211,22 @@ export default function Home() {
         <VStack w="100%" p={3}>
           <PDFPreview page={currPage} dotPositions={dotPositions} />
           <HStack>
+            {currPage > 0 && (
+              <Button
+                onClick={() => {
+                  setCurrPage((p) => Math.max(0, p - 1));
+                }}
+            >
+                PREVIOUS
+              </Button>
+            )}
             <Button
               onClick={async () => {
                 await printCurrentPage();
-                setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
               }}
               disabled={currPage >= dotPositions.length || isPrinting}
             >
-              Print and proceed to next page
+              Print
             </Button>
             <Button
               color="red.400"
@@ -226,6 +234,7 @@ export default function Home() {
                 fetchApi("/stop_print", {
                   method: "POST",
                 });
+                setDotPositions([]);
               }}
             >
               <Icon as={FaStop} />
@@ -252,6 +261,16 @@ export default function Home() {
               <Icon as={FaPlay} />
               RESUME
             </Button>
+            {currPage < dotPositions.length - 1 && (
+              <Button
+                onClick={() => {
+                  setCurrPage((p) => Math.min(dotPositions.length - 1, p + 1));
+                }}
+              disabled={currPage >= dotPositions.length - 1}
+            >
+                NEXT
+              </Button>
+            )}
           </HStack>
         </VStack>
       )}
