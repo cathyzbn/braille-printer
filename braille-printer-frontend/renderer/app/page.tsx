@@ -125,7 +125,7 @@ export default function Home() {
             <Text>Processing...</Text>
           </HStack>
         )}
-        {/* <Text fontSize="xl" mt={4}>
+        <Text fontSize="xl" mt={4}>
           Or submit plain text
         </Text>
         <Input
@@ -133,7 +133,7 @@ export default function Home() {
           value={textValue}
           onChange={(e) => setTextValue(e.target.value)}
         />
-        <Button onClick={submitText}>Submit Text</Button> */}
+        <Button onClick={submitText}>Submit Text</Button>
       </VStack>
     </VStack>
   );

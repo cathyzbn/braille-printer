@@ -19,6 +19,32 @@
     "dist": "npm run build && electron-builder",
     "builder": "electron-builder --dir"
   },
+  "build": {
+    "appId": "Braille-Printer",
+    "productName": "Braille Printer",
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/win/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "uninstallDisplayName": "Braille Printer"
+    },
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg"
+      ],
+      "icon": "assets/mac/icon.icns"
+    },
+    "dmg": {
+      "title": "Braille Printer Installer"
+    }
+  },
   "dependencies": {
     "@chakra-ui/react": "^3.8.0",
     "@emotion/react": "^11.14.0",

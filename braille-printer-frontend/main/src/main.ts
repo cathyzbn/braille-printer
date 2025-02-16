@@ -32,6 +32,11 @@ if (isProd) {
   app.setPath("userData", `${app.getPath("userData")} (development)`);
 }
 
+const iconPath = app.isPackaged ? path.join(
+  process.resourcesPath,
+  "assets/png/1024x1024.png"
+) : path.join(__dirname, "../../assets/png/1024x1024.png");
+
 const createWindow = () => {
   const win = new BrowserWindow({
     webPreferences: {
@@ -39,6 +44,7 @@ const createWindow = () => {
       devTools: !isProd,
     },
     show: false,
+    icon: iconPath
   });
 
   // Expose URL
