@@ -63,6 +63,7 @@ class PrinterConnection:
             self.send_command("G1 E2.2 F200")
             self.send_command("G1 E-2.2 F200")
         self.send_command("G1 E1.5 F200")
+        # self.send_command("G1 Z10 F800") # MAKE SURE TO UNCOMMENT THIS FOR AIR TESTS
         # Make z axis go up
         # self.send_command("G1 Z10 F800")
         input("Press Enter to continue...")
