@@ -122,7 +122,8 @@ def dot_pos_to_pdf(dot_positions: List[DotPosition], output_file: str) -> None:
     pdf = fpdf.FPDF('P', 'mm', 'Letter')
     
     current_page = -1
-    for dot in dot_positions:
+    for dot_dict in dot_positions:
+        dot = DotPosition(**dot_dict) # convert json dict properly
         if dot.page > current_page:
             pdf.add_page()
             current_page = dot.page

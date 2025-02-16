@@ -32,9 +32,19 @@ def handle_input():
     return jsonify({"error": "No file provided"}), 400
 
 @app.route('/dot_pos_to_pdf', methods=['POST'])
-def handle_dot_pos_to_pdf(dot_positions):
+def handle_dot_pos_to_pdf():
+    data = request.get_json()
+    # data["dotPositions"] can be either a list of DotPositions or list of list-of-DotPositions
+    # If you only sent the single page, it's a list of DotPositions
+    dot_positions = data["dotPositions"]
+    
+    # If your 'dot_positions' is a nested list, you might need to flatten it:
+    # flatten_dot_positions = [dot for page in dot_positions for dot in page]
+    #
+    # If it’s already a single list, skip flattening.
+
     dot_pos_to_pdf(dot_positions, "braille.pdf")
-    return send_file("braille.pdf", mimetype='application/pdf')
+    return send_file("braille.pdf", mimetype="application/pdf")
 
 @app.route('/print_dots', methods=['POST'])
 def handle_print_dots(dot_positions):
