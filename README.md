@@ -1,6 +1,8 @@
 # BrailleBot: Turn a 3D Printer to a Braille Printer for $15
 
 > Winner of Treehacks 2025 Best Hardware Hack
+>
+> Video intro: https://youtu.be/atzED5lXhCE
 
 **BrailleBot** transforms any document into printed standard braille, well-suited for printing documents, textbooks, websites, or even Zoom lecture summaries. It’s the first printer that can take any document and convert it to an accessible text format including textual image descriptions using AI visual recognition. It then prints the braille using a novel spring-loaded embossing mechanism mounted on a low-cost 3D printer.
 
